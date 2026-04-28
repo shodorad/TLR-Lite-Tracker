@@ -30,6 +30,114 @@ const slideOut        = { x: '100%', opacity: 0 }
 const center          = { x: 0, opacity: 1 }
 const slideTransition = { type: 'spring', stiffness: 380, damping: 38, mass: 0.8 }
 
+import { styled } from '@mui/material/styles'
+
+/* ─────────────────────────────────────────
+   Styled components
+───────────────────────────────────────── */
+
+/** Full-screen absolute root used by every sub-screen */
+const ScreenRoot = styled(Box)({
+  position: 'absolute', inset: 0,
+  display: 'flex', flexDirection: 'column',
+  background: '#04050d', paddingTop: '16px',
+})
+
+/** Toggle track (the pill button background) */
+const ToggleTrack = styled('button', {
+  shouldForwardProp: p => p !== 'on',
+})<{ on: boolean }>(({ on }) => ({
+  width: 44, height: 26, borderRadius: 13,
+  background: on ? '#C8FF00' : 'rgba(255,255,255,0.12)',
+  border: 'none', cursor: 'pointer', position: 'relative',
+  transition: 'background 0.2s', flexShrink: 0,
+}))
+
+/** Toggle knob (the sliding circle) */
+const ToggleKnob = styled('div', {
+  shouldForwardProp: p => p !== 'on',
+})<{ on: boolean }>(({ on }) => ({
+  position: 'absolute', top: 3, width: 20, height: 20,
+  borderRadius: 10, background: on ? '#000' : 'rgba(255,255,255,0.55)',
+}))
+
+/** Row container */
+const RowShell = styled('div', {
+  shouldForwardProp: p => p !== 'interactive' && p !== 'last',
+})<{ interactive?: boolean; last?: boolean }>(
+  ({ interactive, last }) => ({
+    display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px',
+    cursor: interactive ? 'pointer' : 'default',
+    borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.06)',
+  })
+)
+
+/** Row icon box */
+const RowIconBox = styled(Box, {
+  shouldForwardProp: p => p !== 'danger' && p !== 'iconBg',
+})<{ danger?: boolean; iconBg?: string }>(({ danger, iconBg }) => ({
+  width: 34, height: 34, borderRadius: '10px', flexShrink: 0,
+  background: danger ? 'rgba(232,101,106,0.15)' : (iconBg || 'rgba(200,255,0,0.10)'),
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+}))
+
+/** Row text content wrapper */
+const RowContent = styled(Box)({ flex: 1, minWidth: 0 })
+
+/** Row primary label */
+const RowLabel = styled(Typography, {
+  shouldForwardProp: p => p !== 'danger',
+})<{ danger?: boolean }>(({ danger }) => ({
+  color: danger ? '#E8656A' : '#fff',
+  fontSize: 14.5, fontWeight: 500, letterSpacing: '-0.1px', margin: 0,
+}))
+
+/** Row secondary sublabel */
+const RowSublabel = styled(Typography)({
+  color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: '2px',
+})
+
+/** Row trailing value */
+const RowValue = styled(Typography)({
+  color: 'rgba(255,255,255,0.38)', fontSize: 13, flexShrink: 0,
+}) as typeof Typography
+
+/** Section title typography */
+const SectionTitle = styled(Typography)({
+  color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700,
+  letterSpacing: '0.6px', textTransform: 'uppercase',
+  marginBottom: 8, paddingLeft: '4px',
+})
+
+/** SubNav bar container */
+const SubNavBar = styled(Box)({
+  display: 'flex', alignItems: 'center', gap: '12px',
+  padding: '10px 16px 12px', flexShrink: 0,
+})
+
+/** SubNav back button */
+const SubNavBackBtn = styled(Button)({
+  minWidth: 0, width: 36, height: 36, borderRadius: '12px',
+  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  cursor: 'pointer', flexShrink: 0, padding: 0,
+})
+
+/** SubNav title */
+const SubNavTitle = styled(Typography)({
+  flex: 1, color: '#fff', fontSize: 17, fontWeight: 700,
+  letterSpacing: '-0.3px', margin: 0,
+})
+
+/** EditField wrapper box */
+const FieldBox = styled(Box)({ marginBottom: '14px' })
+
+/** EditField label */
+const FieldLabel = styled(Typography)({
+  color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700,
+  letterSpacing: '0.5px', textTransform: 'uppercase', margin: '0 0 7px',
+})
+
 const MotionButton = motion(Button)
 
 /* ─────────────────────────────────────────
@@ -42,24 +150,17 @@ interface ToggleProps {
 
 function Toggle({ on, onToggle }: ToggleProps) {
   return (
-    <motion.button
+    <ToggleTrack
+      on={on}
       onClick={e => { e.stopPropagation(); onToggle() }}
-      style={{
-        width: 44, height: 26, borderRadius: 13,
-        background: on ? '#C8FF00' : 'rgba(255,255,255,0.12)',
-        border: 'none', cursor: 'pointer', position: 'relative',
-        transition: 'background 0.2s', flexShrink: 0,
-      }}
     >
       <motion.div
         animate={{ x: on ? 21 : 3 }}
         transition={{ type: 'spring', stiffness: 500, damping: 32 }}
-        style={{
-          position: 'absolute', top: 3, width: 20, height: 20,
-          borderRadius: 10, background: on ? '#000' : 'rgba(255,255,255,0.55)',
-        }}
-      />
-    </motion.button>
+      >
+        <ToggleKnob on={on} />
+      </motion.div>
+    </ToggleTrack>
   )
 }
 
@@ -81,38 +182,25 @@ function Row({ icon: Icon, iconBg, label, sublabel, value, onPress, toggle, dang
     <motion.div
       whileTap={interactive ? { scale: 0.985 } : {}}
       onClick={toggle ? toggle.onToggle : onPress}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px',
-        cursor: interactive ? 'pointer' : 'default',
-        borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.06)',
-      }}
     >
-      {Icon && (
-        <Box sx={{
-          width: 34, height: 34, borderRadius: '10px', flexShrink: 0,
-          background: danger ? 'rgba(232,101,106,0.15)' : (iconBg || 'rgba(200,255,0,0.10)'),
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Icon size={15} color={danger ? '#E8656A' : '#C8FF00'} />
-        </Box>
-      )}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ color: danger ? '#E8656A' : '#fff', fontSize: 14.5, fontWeight: 500, letterSpacing: '-0.1px', m: 0 }}>
-          {label}
-        </Typography>
-        {sublabel && (
-          <Typography sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, mt: '2px' }}>
-            {sublabel}
-          </Typography>
+      <RowShell interactive={interactive} last={last}>
+        {Icon && (
+          <RowIconBox danger={danger} iconBg={iconBg}>
+            <Icon size={15} color={danger ? '#E8656A' : '#C8FF00'} />
+          </RowIconBox>
         )}
-      </Box>
-      {toggle ? (
-        <Toggle on={toggle.on} onToggle={toggle.onToggle} />
-      ) : value ? (
-        <Typography component="span" sx={{ color: 'rgba(255,255,255,0.38)', fontSize: 13, flexShrink: 0 }}>{value}</Typography>
-      ) : onPress ? (
-        <ChevronRight size={15} color="rgba(255,255,255,0.22)" style={{ flexShrink: 0 }} />
-      ) : null}
+        <RowContent>
+          <RowLabel danger={danger}>{label}</RowLabel>
+          {sublabel && <RowSublabel>{sublabel}</RowSublabel>}
+        </RowContent>
+        {toggle ? (
+          <Toggle on={toggle.on} onToggle={toggle.onToggle} />
+        ) : value ? (
+          <RowValue component="span">{value}</RowValue>
+        ) : onPress ? (
+          <ChevronRight size={15} color="rgba(255,255,255,0.22)" style={{ flexShrink: 0 }} />
+        ) : null}
+      </RowShell>
     </motion.div>
   )
 }
@@ -130,15 +218,7 @@ function Section({ title, delay = 0, children }: SectionProps) {
       transition={{ delay, type: 'spring', stiffness: 320, damping: 28 }}
       style={{ marginBottom: 22 }}
     >
-      {title && (
-        <Typography sx={{
-          color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700,
-          letterSpacing: '0.6px', textTransform: 'uppercase',
-          mb: 1, pl: '4px',
-        }}>
-          {title}
-        </Typography>
-      )}
+      {title && <SectionTitle>{title}</SectionTitle>}
       <GlassCard sx={{ borderRadius: '18px', overflow: 'hidden' }}>
         {children}
       </GlassCard>
@@ -154,24 +234,19 @@ interface SubNavProps {
 
 function SubNav({ title, onBack, right }: SubNavProps) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px 12px', flexShrink: 0 }}>
-      <MotionButton
-        whileTap={{ scale: 0.88 }} onClick={onBack}
-        disableRipple disableTouchRipple
-        sx={{
-          minWidth: 0, width: 36, height: 36, borderRadius: '12px',
-          background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', flexShrink: 0, p: 0,
-        }}
-      >
-        <ArrowLeft size={16} color="rgba(255,255,255,0.8)" />
-      </MotionButton>
-      <Typography sx={{ flex: 1, color: '#fff', fontSize: 17, fontWeight: 700, letterSpacing: '-0.3px', m: 0 }}>
-        {title}
-      </Typography>
+    <SubNavBar>
+      <motion.div whileTap={{ scale: 0.88 }}>
+        <SubNavBackBtn
+          onClick={onBack}
+          disableRipple
+          disableTouchRipple
+        >
+          <ArrowLeft size={16} color="rgba(255,255,255,0.8)" />
+        </SubNavBackBtn>
+      </motion.div>
+      <SubNavTitle>{title}</SubNavTitle>
       {right}
-    </Box>
+    </SubNavBar>
   )
 }
 
@@ -186,10 +261,8 @@ interface EditFieldProps {
 
 function EditField({ label, value, onChange, type = 'text', placeholder, disabled }: EditFieldProps) {
   return (
-    <Box sx={{ mb: '14px' }}>
-      <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-        {label}
-      </Typography>
+    <FieldBox>
+      <FieldLabel>{label}</FieldLabel>
       <TextField
         type={type} value={value} placeholder={placeholder} disabled={disabled}
         onChange={e => onChange(e.target.value)}
@@ -207,7 +280,7 @@ function EditField({ label, value, onChange, type = 'text', placeholder, disable
           },
         }}
       />
-    </Box>
+    </FieldBox>
   )
 }
 
@@ -254,9 +327,7 @@ function PlateField({ value, onChange, optional }: PlateFieldProps) {
     <Box sx={{ mb: '14px' }}>
       {/* Label row */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: '7px' }}>
-        <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: 0 }}>
-          License Plate{optional ? ' (optional)' : ''}
-        </Typography>
+        <FieldLabel sx={{ m: 0 }}>License Plate{optional ? ' (optional)' : ''}</FieldLabel>
         {/* Character counter — only show when approaching the limit */}
         <AnimatePresence>
           {value.length > 0 && (
@@ -463,7 +534,7 @@ function ProfileEditView({ profile, onSave, onBack }: ProfileEditViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Edit Profile" onBack={onBack} />
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '8px 20px', paddingBottom: '96px' }}>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
@@ -488,7 +559,7 @@ function ProfileEditView({ profile, onSave, onBack }: ProfileEditViewProps) {
       >
         <PrimaryBtn label="Save Changes" onClick={handleSave} disabled={!hasChanges} loading={saving && !done} done={done} />
       </motion.div>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -546,7 +617,7 @@ function VehicleDetailView({ vehicle, onSave, onRemove, onBack }: VehicleDetailV
   const connected = vehicle.device.connected
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title={vehicle.nickname} onBack={onBack} />
 
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '4px 16px', paddingBottom: '96px' }}>
@@ -589,9 +660,7 @@ function VehicleDetailView({ vehicle, onSave, onRemove, onBack }: VehicleDetailV
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }}
           style={{ marginBottom: 22 }}
         >
-          <Typography sx={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', mb: 1, pl: '4px' }}>
-            OBD-II Device
-          </Typography>
+          <SectionTitle>OBD-II Device</SectionTitle>
           <GlassCard sx={{ borderRadius: '18px', padding: '16px' }}>
             {/* Status row */}
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: '12px' }}>
@@ -653,9 +722,7 @@ function VehicleDetailView({ vehicle, onSave, onRemove, onBack }: VehicleDetailV
 
         {/* Edit details */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.10 }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', mb: 1, pl: '4px' }}>
-            Details
-          </Typography>
+          <SectionTitle>Details</SectionTitle>
           <GlassCard sx={{ borderRadius: '18px', padding: '16px' }}>
             <EditField
               label="Nickname"
@@ -748,7 +815,7 @@ function VehicleDetailView({ vehicle, onSave, onRemove, onBack }: VehicleDetailV
         </motion.div>
 
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -822,7 +889,7 @@ function AddVehicleView({ onAdd, onBack }: AddVehicleViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav
         title="Add Vehicle"
         onBack={onBack}
@@ -850,9 +917,7 @@ function AddVehicleView({ onAdd, onBack }: AddVehicleViewProps) {
 
             {/* VIN field + scan button */}
             <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-                VIN (17 characters)
-              </Typography>
+              <FieldLabel>VIN (17 characters)</FieldLabel>
               <Box sx={{ position: 'relative' }}>
                 <TextField
                   value={vin}
@@ -1009,7 +1074,7 @@ function AddVehicleView({ onAdd, onBack }: AddVehicleViewProps) {
           </motion.div>
         )}
       </AnimatePresence>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -1169,9 +1234,7 @@ function SubscriptionMain({ subscription, onSwitch, onCancel, onPayment, onBack 
 
         {/* ── What's included ── */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.10 }} style={{ marginBottom: 14 }}>
-          <Typography sx={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', mb: 1, pl: '4px' }}>
-            {cancelled ? 'What you had' : "What's included"}
-          </Typography>
+          <SectionTitle>{cancelled ? 'What you had' : "What's included"}</SectionTitle>
           <GlassCard sx={{ borderRadius: '18px', overflow: 'hidden' }}>
             {FEATURES.map(({ Icon, text }, i) => (
               <Box key={text} sx={{
@@ -1667,9 +1730,7 @@ interface CardFieldProps {
 function CardField({ label, value, onChange, placeholder, type = 'text', right, monospace }: CardFieldProps) {
   return (
     <Box sx={{ flex: 1 }}>
-      <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-        {label}
-      </Typography>
+      <FieldLabel>{label}</FieldLabel>
       <Box sx={{ position: 'relative' }}>
         <TextField
           type={type} value={value} placeholder={placeholder}
@@ -1763,9 +1824,7 @@ function PaymentMethodView({ subscription, onSave, onBack }: PaymentMethodViewPr
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}
           style={{ marginBottom: 22 }}
         >
-          <Typography sx={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', mb: 1, pl: '4px' }}>
-            On file
-          </Typography>
+          <SectionTitle>On file</SectionTitle>
           <GlassCard sx={{ borderRadius: '16px', padding: '14px 16px', border: '1px solid rgba(200,255,0,0.2)', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Box sx={{ width: 36, height: 24, borderRadius: '5px', background: CARD_TYPE_COLORS[subscription.payment.type] || '#1A72E8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Typography component="span" sx={{ color: '#fff', fontSize: 8, fontWeight: 800, letterSpacing: '0.3px' }}>
@@ -1985,10 +2044,8 @@ interface PasswordFieldProps {
 function PasswordField({ label, value, onChange, placeholder }: PasswordFieldProps) {
   const [show, setShow] = useState(false)
   return (
-    <Box sx={{ mb: '14px' }}>
-      <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-        {label}
-      </Typography>
+    <FieldBox>
+      <FieldLabel>{label}</FieldLabel>
       <TextField
         type={show ? 'text' : 'password'}
         value={value}
@@ -2018,7 +2075,7 @@ function PasswordField({ label, value, onChange, placeholder }: PasswordFieldPro
           },
         }}
       />
-    </Box>
+    </FieldBox>
   )
 }
 
@@ -2049,7 +2106,7 @@ function ChangePasswordView({ onBack }: ChangePasswordViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Change Password" onBack={onBack} />
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '12px 20px', paddingBottom: '96px' }}>
 
@@ -2105,7 +2162,7 @@ function ChangePasswordView({ onBack }: ChangePasswordViewProps) {
       >
         <PrimaryBtn label="Save Password" onClick={handleSave} disabled={!canSave} loading={saving && !done} done={done} />
       </motion.div>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -2170,7 +2227,7 @@ function TwoFactorView({ twoFactor, onUpdate, onBack }: TwoFactorViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title={backTitle} onBack={handleBack} />
 
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '12px 20px', paddingBottom: '96px' }}>
@@ -2296,9 +2353,7 @@ function TwoFactorView({ twoFactor, onUpdate, onBack }: TwoFactorViewProps) {
               </Typography>
 
               <Box sx={{ mb: '20px' }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-                  Verification Code
-                </Typography>
+                <FieldLabel>Verification Code</FieldLabel>
                 <TextField
                   value={code} onChange={e => setCode(e.target.value.replace(/\D/g,'').slice(0,6))}
                   placeholder="• • • • • •" slotProps={{ htmlInput: { maxLength: 6 } }}
@@ -2365,14 +2420,12 @@ function TwoFactorView({ twoFactor, onUpdate, onBack }: TwoFactorViewProps) {
               </Box>
 
               <Box sx={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 16px', mb: '20px' }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 6px' }}>Manual Key</Typography>
+                <FieldLabel sx={{ m: '0 0 6px' }}>Manual Key</FieldLabel>
                 <Typography sx={{ color: '#C8FF00', fontSize: 14, fontWeight: 600, letterSpacing: '2px', fontFamily: 'monospace', m: 0 }}>JBSW Y3DP EBZG K3LN</Typography>
               </Box>
 
               <Box sx={{ mb: '20px' }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-                  Enter 6-Digit Code from App
-                </Typography>
+                <FieldLabel>Enter 6-Digit Code from App</FieldLabel>
                 <TextField
                   value={code} onChange={e => setCode(e.target.value.replace(/\D/g,'').slice(0,6))}
                   placeholder="• • • • • •" slotProps={{ htmlInput: { maxLength: 6 } }}
@@ -2445,7 +2498,7 @@ function TwoFactorView({ twoFactor, onUpdate, onBack }: TwoFactorViewProps) {
 
         </AnimatePresence>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -2487,7 +2540,7 @@ function ActiveSessionsView({ onBack }: ActiveSessionsViewProps) {
   const otherSessions = sessions.filter(s => !s.current)
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Active Sessions" onBack={onBack} />
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '12px 16px', paddingBottom: '96px' }}>
 
@@ -2577,7 +2630,7 @@ function ActiveSessionsView({ onBack }: ActiveSessionsViewProps) {
           </motion.div>
         )}
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -2609,7 +2662,7 @@ function PrivacyDataView({ privacy, onUpdate, onBack }: PrivacyDataViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Privacy & Data" onBack={onBack} />
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '12px 16px', paddingBottom: '96px' }}>
 
@@ -2668,7 +2721,7 @@ function PrivacyDataView({ privacy, onUpdate, onBack }: PrivacyDataViewProps) {
           </Typography>
         </motion.div>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -2697,7 +2750,7 @@ function DeleteAccountView({ profile, onBack }: DeleteAccountViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav
         title={step === 'warning' ? 'Delete Account' : step === 'confirm' ? 'Confirm Deletion' : 'Deleting Account'}
         onBack={step === 'warning' ? onBack : () => setStep('warning')}
@@ -2780,9 +2833,7 @@ function DeleteAccountView({ profile, onBack }: DeleteAccountViewProps) {
               </Typography>
 
               <Box sx={{ mb: '28px' }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>
-                  Email Address
-                </Typography>
+                <FieldLabel>Email Address</FieldLabel>
                 <TextField
                   type="email" value={typed} placeholder={targetEmail}
                   onChange={e => setTyped(e.target.value)}
@@ -2838,7 +2889,7 @@ function DeleteAccountView({ profile, onBack }: DeleteAccountViewProps) {
 
         </AnimatePresence>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -2937,7 +2988,7 @@ function HelpSupportView({ onBack }: HelpSupportViewProps) {
   }
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Help & Support" onBack={onBack} />
 
       {/* Tab switcher */}
@@ -3005,9 +3056,7 @@ function HelpSupportView({ onBack }: HelpSupportViewProps) {
 
               {/* Quick contact options */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ marginTop: 4 }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase', mb: 1, pl: '4px' }}>
-                  Reach Us Directly
-                </Typography>
+                <SectionTitle>Reach Us Directly</SectionTitle>
                 <GlassCard sx={{ borderRadius: '18px', overflow: 'hidden' }}>
                   {[
                     { Icon: Mail,      label: 'support@tracklynk.com', sub: 'Response within 24 hours' },
@@ -3065,7 +3114,7 @@ function HelpSupportView({ onBack }: HelpSupportViewProps) {
 
                   {/* Subject picker */}
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} style={{ marginBottom: 14 }}>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 9px' }}>Topic</Typography>
+                    <FieldLabel sx={{ m: '0 0 9px' }}>Topic</FieldLabel>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                       {['Device Setup', 'Billing', 'Trips & Data', 'Account', 'App Bug', 'Other'].map(s => (
                         <MotionButton key={s} whileTap={{ scale: 0.94 }} onClick={() => setSubject(s)}
@@ -3088,7 +3137,7 @@ function HelpSupportView({ onBack }: HelpSupportViewProps) {
 
                   {/* Message textarea */}
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.10 }} style={{ marginBottom: 20 }}>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', m: '0 0 7px' }}>Message</Typography>
+                    <FieldLabel>Message</FieldLabel>
                     <TextField
                       value={message}
                       placeholder="Describe your issue in detail…"
@@ -3123,7 +3172,7 @@ function HelpSupportView({ onBack }: HelpSupportViewProps) {
 
         </AnimatePresence>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -3175,7 +3224,7 @@ interface WhatsNewViewProps {
 
 function WhatsNewView({ onBack }: WhatsNewViewProps) {
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="What's New" onBack={onBack} />
       <Box sx={{ flex: 1, overflowY: 'auto', padding: '8px 16px', paddingBottom: '40px' }}>
         {CHANGELOG.map((release, ri) => (
@@ -3232,7 +3281,7 @@ function WhatsNewView({ onBack }: WhatsNewViewProps) {
           </Typography>
         </motion.div>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -3272,7 +3321,7 @@ function TermsPrivacyView({ onBack }: TermsPrivacyViewProps) {
   const updated  = tab === 'terms' ? 'Last updated April 1, 2026' : 'Last updated April 1, 2026'
 
   return (
-    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: '#04050d', paddingTop: '16px' }}>
+    <ScreenRoot>
       <SubNav title="Terms & Privacy" onBack={onBack} />
 
       {/* Tab bar */}
@@ -3321,7 +3370,7 @@ function TermsPrivacyView({ onBack }: TermsPrivacyViewProps) {
           </motion.div>
         </AnimatePresence>
       </Box>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -3396,7 +3445,7 @@ export default function Settings() {
     <Box sx={{ height: '100%', position: 'relative', background: '#04050d', overflow: 'hidden' }}>
 
       {/* ── Main list ── */}
-      <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', paddingTop: '16px' }}>
+      <ScreenRoot>
         <Box sx={{ padding: '14px 20px 10px', flexShrink: 0 }}>
           <Typography sx={{ color: '#fff', fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', m: 0 }}>
             Settings
@@ -3557,7 +3606,7 @@ export default function Settings() {
           </Section>
 
         </Box>
-      </Box>
+      </ScreenRoot>
 
       {/* ── Sub-screen layer ── */}
       <AnimatePresence>

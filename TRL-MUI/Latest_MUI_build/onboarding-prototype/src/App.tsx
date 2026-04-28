@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { styled } from '@mui/material/styles'
 import Welcome from './screens/Welcome'
 import Auth from './screens/Auth'
 import SignUp from './screens/SignUp'
@@ -15,12 +16,58 @@ import Settings from './screens/Settings'
 import BottomTabs from './components/BottomTabs'
 import ConversationalPanel from './components/ConversationalPanel'
 
+// ─── Styled Components ────────────────────────────────
+
+const AppRoot = styled('div')({
+  width: '100vw',
+  height: '100vh',
+  overflow: 'hidden',
+  position: 'relative',
+  background: `
+    radial-gradient(ellipse 70% 50% at 30% 40%, rgba(200,255,0,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 75% 60%, rgba(180,230,0,0.03) 0%, transparent 60%),
+    #000
+  `,
+})
+
+const MainAppInner = styled('div')({
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+})
+
+const ContentPane = styled('div')({
+  flex: 1,
+  position: 'relative',
+  overflow: 'hidden',
+  minWidth: 0,
+})
+
+const OnboardingSlide = styled('div')({
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+  justifyContent: 'center',
+})
+
+const OnboardingFrame = styled('div')({
+  width: '100%',
+  maxWidth: 480,
+  height: '100%',
+  position: 'relative',
+})
+
+const MotionMainApp = motion(MainAppInner)
+const MotionOnboardingSlide = motion(OnboardingSlide)
+
+// ─── Constants ────────────────────────────────────────
+
 const SCREENS = ['welcome', 'auth', 'signup', 'scan', 'vehicle', 'details', 'deviceSetup', 'choosePlan', 'success']
 
 const slideVariants = {
-  enter: (dir) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:  (dir) => ({ x: dir > 0 ? '-100%' : '100%', opacity: 0 }),
+  exit:  (dir: number) => ({ x: dir > 0 ? '-100%' : '100%', opacity: 0 }),
 }
 
 const transition = { type: 'spring', stiffness: 380, damping: 38, mass: 0.8 }
@@ -34,7 +81,7 @@ export default function App() {
 
   const next        = () => { setDir(1);  setStep(s => Math.min(s + 1, SCREENS.length - 1)) }
   const back        = () => { setDir(-1); setStep(s => Math.max(s - 1, 0)) }
-  const goTo        = (i) => { setDir(i > step ? 1 : -1); setStep(i) }
+  const goTo        = (i: number) => { setDir(i > step ? 1 : -1); setStep(i) }
   const enterApp    = () => setAppPhase('main')
   const skipToScan  = () => { setDir(1); setStep(SCREENS.indexOf('scan')) }
 
@@ -62,29 +109,16 @@ export default function App() {
   const isMainApp = appPhase === 'main'
 
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        position: 'relative',
-        background: `
-          radial-gradient(ellipse 70% 50% at 30% 40%, rgba(200,255,0,0.04) 0%, transparent 60%),
-          radial-gradient(ellipse 60% 50% at 75% 60%, rgba(180,230,0,0.03) 0%, transparent 60%),
-          #000
-        `,
-      }}
-    >
+    <AppRoot>
       {isMainApp ? (
-        <motion.div
+        <MotionMainApp
           key="main-app"
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-          style={{ position: 'absolute', inset: 0, display: 'flex' }}
         >
           {/* Left content — shrinks when panel opens */}
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden', minWidth: 0 }}>
+          <ContentPane>
             {mainScreen === 'home' ? <Home /> : mainScreen === 'trips' ? <Trips /> : <Settings />}
             <BottomTabs
               current={mainScreen}
@@ -92,14 +126,14 @@ export default function App() {
               onChatOpen={() => setPanelOpen(true)}
               chatActive={panelOpen}
             />
-          </div>
+          </ContentPane>
 
           {/* Right panel — slides in and pushes layout */}
           <ConversationalPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
-        </motion.div>
+        </MotionMainApp>
       ) : (
         <AnimatePresence custom={dir} mode="popLayout" initial={false}>
-          <motion.div
+          <MotionOnboardingSlide
             key={screen}
             custom={dir}
             variants={slideVariants}
@@ -107,17 +141,13 @@ export default function App() {
             animate="center"
             exit="exit"
             transition={transition}
-            style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', justifyContent: 'center',
-            }}
           >
-            <div style={{ width: '100%', maxWidth: 480, height: '100%', position: 'relative' }}>
+            <OnboardingFrame>
               {renderOnboardingScreen()}
-            </div>
-          </motion.div>
+            </OnboardingFrame>
+          </MotionOnboardingSlide>
         </AnimatePresence>
       )}
-    </div>
+    </AppRoot>
   )
 }

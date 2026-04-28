@@ -2,11 +2,109 @@ import React, { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button, TextField, InputAdornment, IconButton } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { Eye, EyeOff } from 'lucide-react'
 import ProgressBar from './ProgressBar'
 import { useUserContext } from '../context/UserContext'
 
 const MotionButton = motion(Button)
+
+// ─── Styled Components ────────────────────────────────
+
+const ScreenRoot = styled(Box)({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  paddingTop: '44px',
+  position: 'relative',
+})
+
+const ScrollArea = styled(Box)({
+  flex: 1,
+  overflowY: 'auto',
+  padding: '20px 24px 0',
+})
+
+const HeadingText = styled(Typography)({
+  fontSize: 26,
+  fontWeight: 800,
+  letterSpacing: '-0.6px',
+  marginBottom: '6px',
+})
+
+const SubText = styled(Typography)({
+  fontSize: 14,
+  marginBottom: '24px',
+})
+
+const NameRow = styled(Box)({
+  display: 'flex',
+  gap: '10px',
+})
+
+const PasswordErrorText = styled(Typography)({
+  color: 'rgba(255,80,80,0.9)',
+  fontSize: 11.5,
+  marginTop: '5px',
+})
+
+const LegalText = styled(Typography)({
+  color: 'rgba(255,255,255,0.28)',
+  fontSize: 11.5,
+  textAlign: 'center',
+  paddingTop: '4px',
+  paddingBottom: '4px',
+})
+
+const PasswordIconButton = styled(IconButton)({
+  color: 'text.disabled',
+  marginRight: '-8px',
+})
+
+const LegalLink = styled('span')(({ theme }) => ({
+  color: theme.palette.primary.main,
+}))
+
+const FooterBox = styled(Box)({
+  padding: '20px 24px 48px',
+})
+
+const FieldLabelText = styled(Typography)({
+  color: 'rgba(255,255,255,0.48)',
+  fontSize: 12,
+  fontWeight: 600,
+  letterSpacing: '0.2px',
+  display: 'block',
+  marginBottom: '8px',
+})
+
+const FieldRoot = styled(Box)({
+  flex: 1,
+})
+
+const FieldErrorText = styled(Typography)({
+  color: 'rgba(255,80,80,0.9)',
+  fontSize: 11.5,
+  marginTop: '5px',
+})
+
+const FormFieldsColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
+})
+
+const MotionFormFieldsColumn = motion(FormFieldsColumn)
+
+const PrimaryMotionButton = styled(MotionButton)({
+  height: 54,
+  borderRadius: '18px',
+  fontSize: 16,
+  fontWeight: 700,
+  letterSpacing: '-0.2px',
+})
+
+// ─── Validation ───────────────────────────────────────
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -40,26 +138,25 @@ export default function SignUp({ next, back, step, total }: SignUpProps) {
   const touch = (key: string) => setTouched(t => ({ ...t, [key]: true }))
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: '44px', position: 'relative' }}>
+    <ScreenRoot>
       <ProgressBar current={step} total={total} onBack={back} title="Create Account" />
 
-      <Box sx={{ flex: 1, overflowY: 'auto', p: '20px 24px 0' }}>
+      <ScrollArea>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Typography sx={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.6px', mb: '6px' }}>
+          <HeadingText>
             Let's get you set up
-          </Typography>
-          <Typography variant="body2" sx={{ fontSize: 14, mb: '24px' }}>
+          </HeadingText>
+          <SubText variant="body2">
             Takes under 3 minutes. We'll protect your data.
-          </Typography>
+          </SubText>
         </motion.div>
 
-        <motion.div
+        <MotionFormFieldsColumn
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
         >
-          <Box sx={{ display: 'flex', gap: '10px' }}>
+          <NameRow>
             <Field
               label="First name" value={form.first} placeholder="Jane"
               onChange={v => setForm(f => ({...f, first: v}))}
@@ -72,7 +169,7 @@ export default function SignUp({ next, back, step, total }: SignUpProps) {
               onBlur={() => touch('last')}
               error={touched.last ? errors.last : null}
             />
-          </Box>
+          </NameRow>
           <Field
             label="Mobile number" value={form.phone} placeholder="+1 (555) 000-0000" type="tel"
             onChange={v => setForm(f => ({...f, phone: v}))}
@@ -98,40 +195,39 @@ export default function SignUp({ next, back, step, total }: SignUpProps) {
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
+                      <PasswordIconButton
                         onClick={() => setShowPass(s => !s)}
                         edge="end"
-                        sx={{ color: 'text.disabled', mr: '-8px' }}
                       >
                         {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-                      </IconButton>
+                      </PasswordIconButton>
                     </InputAdornment>
                   ),
                 },
               }}
             />
             {touched.password && errors.password && (
-              <Typography sx={{ color: 'rgba(255,80,80,0.9)', fontSize: 11.5, mt: '5px' }}>
+              <PasswordErrorText>
                 {errors.password}
-              </Typography>
+              </PasswordErrorText>
             )}
           </Box>
 
-          <Typography sx={{ color: 'rgba(255,255,255,0.28)', fontSize: 11.5, textAlign: 'center', py: '4px' }}>
+          <LegalText>
             By continuing you agree to our{' '}
-            <Box component="span" sx={{ color: 'primary.main' }}>Terms</Box>
+            <LegalLink>Terms</LegalLink>
             {' '}&amp;{' '}
-            <Box component="span" sx={{ color: 'primary.main' }}>Privacy Policy</Box>
-          </Typography>
-        </motion.div>
-      </Box>
+            <LegalLink>Privacy Policy</LegalLink>
+          </LegalText>
+        </MotionFormFieldsColumn>
+      </ScrollArea>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-        <Box sx={{ p: '20px 24px 48px' }}>
+        <FooterBox>
           <PrimaryButton onClick={handleNext} label="Continue" disabled={!isValid} />
-        </Box>
+        </FooterBox>
       </motion.div>
-    </Box>
+    </ScreenRoot>
   )
 }
 
@@ -139,12 +235,9 @@ export default function SignUp({ next, back, step, total }: SignUpProps) {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <Typography sx={{
-      color: 'rgba(255,255,255,0.48)', fontSize: 12, fontWeight: 600,
-      letterSpacing: '0.2px', display: 'block', mb: '8px',
-    }}>
+    <FieldLabelText>
       {children}
-    </Typography>
+    </FieldLabelText>
   )
 }
 
@@ -160,7 +253,7 @@ interface FieldProps {
 
 function Field({ label, value, onChange, placeholder, type = 'text', onBlur, error }: FieldProps) {
   return (
-    <Box sx={{ flex: 1 }}>
+    <FieldRoot>
       <FieldLabel>{label}</FieldLabel>
       <TextField
         fullWidth
@@ -171,11 +264,9 @@ function Field({ label, value, onChange, placeholder, type = 'text', onBlur, err
         onBlur={onBlur}
       />
       {error && (
-        <Typography sx={{ color: 'rgba(255,80,80,0.9)', fontSize: 11.5, mt: '5px' }}>
-          {error}
-        </Typography>
+        <FieldErrorText>{error}</FieldErrorText>
       )}
-    </Box>
+    </FieldRoot>
   )
 }
 
@@ -242,15 +333,14 @@ export interface PrimaryButtonProps {
 
 export function PrimaryButton({ onClick, label, disabled }: PrimaryButtonProps) {
   return (
-    <MotionButton
+    <PrimaryMotionButton
       fullWidth
       variant="contained"
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       disabled={disabled}
-      sx={{ height: 54, borderRadius: '18px', fontSize: 16, fontWeight: 700, letterSpacing: '-0.2px' }}
     >
       {label}
-    </MotionButton>
+    </PrimaryMotionButton>
   )
 }

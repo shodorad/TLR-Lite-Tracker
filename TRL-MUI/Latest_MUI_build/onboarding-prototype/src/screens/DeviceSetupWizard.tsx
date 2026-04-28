@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Box, Typography, Button } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { CheckCircle2, Bluetooth, Zap } from 'lucide-react'
 import ProgressBar from './ProgressBar'
 import { glassCard } from '../styles/glass'
@@ -10,7 +11,281 @@ import { useUserContext } from '../context/UserContext'
 const MotionButton = motion(Button)
 const IS_DEV = import.meta.env.DEV
 
-// ─── Step 0: OBD Port Illustration ────────────────────
+// ─── Styled components ────────────────────────────────────
+
+const WizardRoot = styled(Box)({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  paddingTop: '16px',
+  position: 'relative',
+})
+
+const SkipRow = styled(Box)({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: '0 24px 4px',
+})
+
+const SkipButton = styled(MotionButton)({
+  color: 'rgba(255,255,255,0.35)',
+  fontSize: 13,
+  fontWeight: 500,
+  padding: '4px 0',
+  minWidth: 0,
+})
+
+const WizardBody = styled(Box)({
+  flex: 1,
+  padding: '8px 24px 0',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+})
+
+const StepDotsRow = styled(Box)({
+  display: 'flex',
+  gap: '6px',
+  justifyContent: 'center',
+  marginBottom: '20px',
+})
+
+const WizardCTAArea = styled(Box)({
+  padding: '16px 24px 48px',
+})
+
+const WizardStepTitle = styled(Typography)({
+  fontSize: 26,
+  fontWeight: 800,
+  letterSpacing: '-0.6px',
+  textAlign: 'center',
+  marginBottom: '6px',
+})
+
+const WizardStepSubtitle = styled(Typography)({
+  fontSize: 14,
+  textAlign: 'center',
+})
+
+const VisualCenterBox = styled(Box)({
+  flex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+// ─── OBD Port Illustration styled parts ───────────────────
+
+const OBDIllustrationColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+})
+
+const OBDCardBox = styled(Box)({
+  ...glassCard,
+  width: 240,
+  height: 160,
+  borderRadius: '22px',
+  position: 'relative',
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+const OBDHintBox = styled(Box)({
+  backgroundColor: 'rgba(200,255,0,0.07)',
+  border: '1px solid rgba(200,255,0,0.20)',
+  borderRadius: '16px',
+  padding: '14px 18px',
+  maxWidth: 280,
+  textAlign: 'center',
+})
+
+const OBDHintTitle = styled(Typography)({
+  fontSize: 12.5,
+  fontWeight: 600,
+  marginBottom: '4px',
+})
+
+const OBDHintBody = styled(Typography)({
+  fontSize: 12,
+  lineHeight: 1.6,
+})
+
+// ─── Plug In Illustration styled parts ────────────────────
+
+const PlugInColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+})
+
+const PlugInCardBox = styled(Box)<{ plugged: boolean }>(({ plugged }) => ({
+  ...glassCard,
+  width: 200,
+  height: 160,
+  borderRadius: '22px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  overflow: 'hidden',
+  cursor: 'pointer',
+}))
+
+const OBDSocketBox = styled(Box)<{ plugged: boolean }>(({ plugged }) => ({
+  position: 'absolute',
+  bottom: 32,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: 60,
+  height: 36,
+  borderRadius: '8px',
+  backgroundColor: 'rgba(255,255,255,0.06)',
+  border: `2px solid ${plugged ? '#4ade80' : 'rgba(255,255,255,0.20)'}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '4px',
+  transition: 'border-color 0.4s',
+}))
+
+const SocketPin = styled(Box)<{ plugged: boolean }>(({ plugged }) => ({
+  width: 4,
+  height: 7,
+  backgroundColor: plugged ? 'rgba(74,222,128,0.5)' : 'rgba(255,255,255,0.25)',
+  borderRadius: '1px',
+  transition: 'background 0.4s',
+}))
+
+const TracklynkLabel = styled(Typography)({
+  color: 'rgba(255,255,255,0.30)',
+  fontSize: 6,
+  letterSpacing: '0.8px',
+  fontFamily: 'monospace',
+  textTransform: 'uppercase',
+})
+
+const BarRow = styled(Box)({
+  display: 'flex',
+  gap: '2px',
+})
+
+const BarPin = styled('span')<{ barheight: number }>(({ barheight }) => ({
+  display: 'inline-block',
+  width: 2,
+  height: barheight,
+  backgroundColor: 'rgba(255,255,255,0.5)',
+  borderRadius: '1px',
+}))
+
+const SimulateTapText = styled(Typography)({
+  color: 'rgba(255,255,255,0.25)',
+  fontSize: 10,
+})
+
+const PlugInBodyText = styled(Typography)({
+  fontSize: 13,
+  textAlign: 'center',
+  maxWidth: 240,
+  lineHeight: 1.6,
+})
+
+// ─── Start Engine Illustration styled parts ────────────────
+
+const StartEngineColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+})
+
+const StartEngineTapTarget = styled(Box)({
+  cursor: 'pointer',
+})
+
+const StartEngineBodyText = styled(Typography)<{ started: boolean }>(({ started }) => ({
+  fontSize: 13,
+  textAlign: 'center',
+  maxWidth: 240,
+  lineHeight: 1.6,
+  color: started ? '#4ade80' : 'rgba(255,255,255,0.45)',
+  transition: 'color 0.4s',
+}))
+
+// ─── Bluetooth Illustration styled parts ──────────────────
+
+const BluetoothColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 20,
+})
+
+const BluetoothRingContainer = styled(Box)({
+  position: 'relative',
+  width: 160,
+  height: 160,
+})
+
+const BluetoothCenterCircle = styled(Box)<{ paired: boolean }>(({ paired }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 72,
+  height: 72,
+  borderRadius: '50%',
+  backgroundColor: paired ? 'rgba(74,222,128,0.12)' : 'rgba(200,255,0,0.08)',
+  border: `2px solid ${paired ? 'rgba(74,222,128,0.4)' : 'rgba(200,255,0,0.3)'}`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.5s',
+}))
+
+const PairedBox = styled(Box)({
+  backgroundColor: 'rgba(74,222,128,0.08)',
+  border: '1px solid rgba(74,222,128,0.22)',
+  borderRadius: '16px',
+  padding: '14px 24px',
+  textAlign: 'center',
+})
+
+const PairedTitle = styled(Typography)({
+  color: '#4ade80',
+  fontWeight: 700,
+  fontSize: 15,
+})
+
+const PairedCaption = styled(Typography)({
+  fontSize: 12,
+  marginTop: '4px',
+  display: 'block',
+})
+
+const SearchingText = styled(Typography)({
+  fontSize: 13,
+  lineHeight: 1.6,
+})
+
+const PairDeviceButton = styled(MotionButton)({
+  gap: '8px',
+  padding: '11px 22px',
+  borderRadius: '14px',
+  backgroundColor: 'rgba(200,255,0,0.10)',
+  borderColor: 'rgba(200,255,0,0.28)',
+  fontSize: 14,
+  fontWeight: 600,
+  '&:hover': { backgroundColor: 'rgba(200,255,0,0.14)' },
+})
+
+// ─── Step 0: OBD Port Illustration ────────────────────────
+
 function OBDPortIllustration({ onDone }) {
   // Informational only — mark done immediately on mount
   useEffect(() => { onDone() }, [])
@@ -22,7 +297,7 @@ function OBDPortIllustration({ onDone }) {
       transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 24 }}
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}
     >
-      <Box sx={{ ...glassCard, width: 240, height: 160, borderRadius: '22px', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <OBDCardBox>
         <svg width="220" height="140" viewBox="0 0 220 140" fill="none">
           <path d="M10 90 Q40 60 110 55 Q180 60 210 90 L210 140 L10 140 Z"
             fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
@@ -51,21 +326,22 @@ function OBDPortIllustration({ onDone }) {
           </motion.g>
           <text x="71" y="140" textAnchor="middle" fill="rgba(200,255,0,0.7)" fontSize="7" fontFamily="monospace" letterSpacing="0.5">OBD-II PORT</text>
         </svg>
-      </Box>
+      </OBDCardBox>
 
-      <Box sx={{ bgcolor: 'rgba(200,255,0,0.07)', border: '1px solid rgba(200,255,0,0.20)', borderRadius: '16px', p: '14px 18px', maxWidth: 280, textAlign: 'center' }}>
-        <Typography sx={{ color: 'primary.main', fontSize: 12.5, fontWeight: 600, mb: '4px' }}>
+      <OBDHintBox>
+        <OBDHintTitle color="primary.main">
           Usually under the dashboard
-        </Typography>
-        <Typography variant="body2" sx={{ fontSize: 12, lineHeight: 1.6 }}>
+        </OBDHintTitle>
+        <OBDHintBody variant="body2">
           Driver's side, near the steering column. Look for a 16-pin trapezoid socket.
-        </Typography>
-      </Box>
+        </OBDHintBody>
+      </OBDHintBox>
     </motion.div>
   )
 }
 
-// ─── Step 1: Plug In Illustration ─────────────────────
+// ─── Step 1: Plug In Illustration ─────────────────────────
+
 function PlugInIllustration({ onDone }) {
   const [plugged, setPlugged] = useState(false)
 
@@ -81,23 +357,13 @@ function PlugInIllustration({ onDone }) {
       transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 24 }}
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}
     >
-      <Box
-        onClick={handlePlug}
-        sx={{ ...glassCard, width: 200, height: 160, borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', cursor: 'pointer' }}
-      >
+      <PlugInCardBox plugged={plugged} onClick={handlePlug}>
         {/* OBD socket */}
-        <Box sx={{
-          position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          width: 60, height: 36, borderRadius: '8px',
-          bgcolor: 'rgba(255,255,255,0.06)',
-          border: `2px solid ${plugged ? '#4ade80' : 'rgba(255,255,255,0.20)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-          transition: 'border-color 0.4s',
-        }}>
+        <OBDSocketBox plugged={plugged}>
           {[0,1,2,3,4].map(i => (
-            <Box key={i} sx={{ width: 4, height: 7, bgcolor: plugged ? 'rgba(74,222,128,0.5)' : 'rgba(255,255,255,0.25)', borderRadius: '1px', transition: 'background 0.4s' }} />
+            <SocketPin key={i} plugged={plugged} />
           ))}
-        </Box>
+        </OBDSocketBox>
 
         {/* Device */}
         <motion.div
@@ -111,12 +377,12 @@ function PlugInIllustration({ onDone }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 4,
           }}
         >
-          <Typography sx={{ color: 'rgba(255,255,255,0.30)', fontSize: 6, letterSpacing: '0.8px', fontFamily: 'monospace', textTransform: 'uppercase' }}>TRACKLYNK</Typography>
-          <Box sx={{ display: 'flex', gap: '2px' }}>
+          <TracklynkLabel>TRACKLYNK</TracklynkLabel>
+          <BarRow>
             {[6,4,7,3,8,4,6].map((h, i) => (
-              <Box key={i} sx={{ width: 2, height: h * 1.8, bgcolor: 'rgba(255,255,255,0.5)', borderRadius: '1px' }} />
+              <BarPin key={i} barheight={h * 1.8} />
             ))}
-          </Box>
+          </BarRow>
           <motion.div
             animate={plugged ? { background: ['#4ade80', '#4ade80'] } : { opacity: [1, 0.3, 1] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
@@ -145,19 +411,20 @@ function PlugInIllustration({ onDone }) {
 
         {IS_DEV && !plugged && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} style={{ position: 'absolute', bottom: 10, left: 0, right: 0, textAlign: 'center' }}>
-            <Typography sx={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>tap to simulate</Typography>
+            <SimulateTapText>tap to simulate</SimulateTapText>
           </motion.div>
         )}
-      </Box>
+      </PlugInCardBox>
 
-      <Typography variant="body2" sx={{ fontSize: 13, textAlign: 'center', maxWidth: 240, lineHeight: 1.6 }}>
+      <PlugInBodyText variant="body2">
         Push the device firmly into the OBD-II port until it clicks into place.
-      </Typography>
+      </PlugInBodyText>
     </motion.div>
   )
 }
 
-// ─── Step 2: Start Engine Illustration ────────────────
+// ─── Step 2: Start Engine Illustration ────────────────────
+
 function StartEngineIllustration({ onDone }) {
   const [started, setStarted] = useState(false)
 
@@ -173,7 +440,7 @@ function StartEngineIllustration({ onDone }) {
       transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 24 }}
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}
     >
-      <Box onClick={handleStart} sx={{ cursor: 'pointer' }}>
+      <StartEngineTapTarget onClick={handleStart}>
         <motion.div
           whileTap={{ scale: 0.92 }}
           style={{
@@ -216,20 +483,21 @@ function StartEngineIllustration({ onDone }) {
             </motion.div>
           )}
         </motion.div>
-      </Box>
+      </StartEngineTapTarget>
 
-      <Typography variant="body2" sx={{ fontSize: 13, textAlign: 'center', maxWidth: 240, lineHeight: 1.6, color: started ? '#4ade80' : 'rgba(255,255,255,0.45)', transition: 'color 0.4s' }}>
+      <StartEngineBodyText variant="body2" started={started}>
         {started
           ? 'Engine running — device is powering up.'
           : IS_DEV
             ? 'Start your engine to power the TrackLynk device. Tap to simulate.'
             : 'Start your engine to power the TrackLynk device.'}
-      </Typography>
+      </StartEngineBodyText>
     </motion.div>
   )
 }
 
-// ─── Step 3: Bluetooth Pairing ─────────────────────────
+// ─── Step 3: Bluetooth Pairing ─────────────────────────────
+
 function BluetoothIllustration({ onDone }) {
   const [paired, setPaired] = useState(false)
 
@@ -245,7 +513,7 @@ function BluetoothIllustration({ onDone }) {
       transition={{ delay: 0.15, type: 'spring', stiffness: 260, damping: 24 }}
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}
     >
-      <Box sx={{ position: 'relative', width: 160, height: 160 }}>
+      <BluetoothRingContainer>
         {!paired && [1, 1.4, 1.8].map((scale, i) => (
           <motion.div
             key={i}
@@ -254,14 +522,7 @@ function BluetoothIllustration({ onDone }) {
             style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1.5px solid rgba(200,255,0,0.35)', margin: 'auto', width: 64, height: 64 }}
           />
         ))}
-        <Box sx={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          width: 72, height: 72, borderRadius: '50%',
-          bgcolor: paired ? 'rgba(74,222,128,0.12)' : 'rgba(200,255,0,0.08)',
-          border: `2px solid ${paired ? 'rgba(74,222,128,0.4)' : 'rgba(200,255,0,0.3)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.5s',
-        }}>
+        <BluetoothCenterCircle paired={paired}>
           {paired ? (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
               <CheckCircle2 size={28} color="#4ade80" />
@@ -269,46 +530,41 @@ function BluetoothIllustration({ onDone }) {
           ) : (
             <Bluetooth size={28} color="#C8FF00" />
           )}
-        </Box>
-      </Box>
+        </BluetoothCenterCircle>
+      </BluetoothRingContainer>
 
       <AnimatePresence mode="wait">
         {paired ? (
           <motion.div key="paired" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Box sx={{ bgcolor: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.22)', borderRadius: '16px', p: '14px 24px', textAlign: 'center' }}>
-              <Typography sx={{ color: '#4ade80', fontWeight: 700, fontSize: 15 }}>TrackLynk Connected!</Typography>
-              <Typography variant="caption" sx={{ fontSize: 12, mt: '4px', display: 'block' }}>Device is syncing data</Typography>
-            </Box>
+            <PairedBox>
+              <PairedTitle>TrackLynk Connected!</PairedTitle>
+              <PairedCaption variant="caption">Device is syncing data</PairedCaption>
+            </PairedBox>
           </motion.div>
         ) : (
           <motion.div key="searching" style={{ textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ fontSize: 13, lineHeight: 1.6 }}>
+            <SearchingText variant="body2">
               Scanning for your TrackLynk device via Bluetooth…
-            </Typography>
+            </SearchingText>
           </motion.div>
         )}
       </AnimatePresence>
 
       {!paired && (
-        <MotionButton
+        <PairDeviceButton
           variant="outlined"
           whileTap={{ scale: 0.96 }}
           onClick={handlePair}
-          sx={{
-            gap: '8px', p: '11px 22px', borderRadius: '14px',
-            bgcolor: 'rgba(200,255,0,0.10)', borderColor: 'rgba(200,255,0,0.28)',
-            color: 'primary.main', fontSize: 14, fontWeight: 600,
-            '&:hover': { bgcolor: 'rgba(200,255,0,0.14)' },
-          }}
+          color="primary"
         >
           <Zap size={14} /> {IS_DEV ? 'Simulate Pairing' : 'Pair Device'}
-        </MotionButton>
+        </PairDeviceButton>
       )}
     </motion.div>
   )
 }
 
-// ─── Wizard steps config ───────────────────────────────
+// ─── Wizard steps config ───────────────────────────────────
 
 const WIZARD_STEPS = [
   { title: 'Find the OBD port',   subtitle: "We'll show you exactly where to look.",        Visual: OBDPortIllustration,    cta: 'Found it →' },
@@ -317,7 +573,7 @@ const WIZARD_STEPS = [
   { title: 'Bluetooth pairing',   subtitle: 'Connect to the device to confirm setup.',      Visual: BluetoothIllustration,  cta: 'All done →' },
 ]
 
-// ─── Main screen ───────────────────────────────────────
+// ─── Main screen ───────────────────────────────────────────
 
 interface DeviceSetupWizardProps {
   next: () => void
@@ -365,24 +621,23 @@ export default function DeviceSetupWizard({ next, back, step, total }: DeviceSet
   }
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: '16px', position: 'relative' }}>
+    <WizardRoot>
       <ProgressBar current={step} total={total} onBack={goBack} title="Device Setup" />
 
       {/* Skip guide */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: '0 24px 4px' }}>
-        <MotionButton
+      <SkipRow>
+        <SkipButton
           variant="text"
           whileTap={{ scale: 0.95 }}
           onClick={handleSkip}
-          sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, fontWeight: 500, p: '4px 0', minWidth: 0 }}
         >
           Skip guide →
-        </MotionButton>
-      </Box>
+        </SkipButton>
+      </SkipRow>
 
-      <Box sx={{ flex: 1, p: '8px 24px 0', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <WizardBody>
         {/* Step dots */}
-        <Box sx={{ display: 'flex', gap: '6px', justifyContent: 'center', mb: '20px' }}>
+        <StepDotsRow>
           {WIZARD_STEPS.map((_, i) => (
             <motion.div
               key={i}
@@ -390,7 +645,7 @@ export default function DeviceSetupWizard({ next, back, step, total }: DeviceSet
               style={{ height: 6, borderRadius: 99 }}
             />
           ))}
-        </Box>
+        </StepDotsRow>
 
         <AnimatePresence custom={dir} mode="popLayout" initial={false}>
           <motion.div
@@ -404,23 +659,23 @@ export default function DeviceSetupWizard({ next, back, step, total }: DeviceSet
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}
           >
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} style={{ textAlign: 'center', marginBottom: 20 }}>
-              <Typography sx={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.6px', textAlign: 'center', mb: '6px' }}>
+              <WizardStepTitle>
                 {title}
-              </Typography>
-              <Typography variant="body2" sx={{ fontSize: 14, textAlign: 'center' }}>
+              </WizardStepTitle>
+              <WizardStepSubtitle variant="body2">
                 {subtitle}
-              </Typography>
+              </WizardStepSubtitle>
             </motion.div>
 
-            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <VisualCenterBox>
               <Visual onDone={handleStepDone} />
-            </Box>
+            </VisualCenterBox>
           </motion.div>
         </AnimatePresence>
-      </Box>
+      </WizardBody>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-        <Box sx={{ p: '16px 24px 48px' }}>
+        <WizardCTAArea>
           <AnimatePresence mode="wait">
             <motion.div
               key={`cta-${wizardStep}`}
@@ -432,8 +687,8 @@ export default function DeviceSetupWizard({ next, back, step, total }: DeviceSet
               <PrimaryButton onClick={advance} label={cta} disabled={!stepDone} />
             </motion.div>
           </AnimatePresence>
-        </Box>
+        </WizardCTAArea>
       </motion.div>
-    </Box>
+    </WizardRoot>
   )
 }

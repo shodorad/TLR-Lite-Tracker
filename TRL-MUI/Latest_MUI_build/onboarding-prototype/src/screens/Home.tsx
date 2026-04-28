@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Box, Typography, Button } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api'
 import { useUserContext } from '../context/UserContext'
 import { ChevronDown, Bell, Zap, LocateFixed } from 'lucide-react'
@@ -58,6 +59,229 @@ const POLYLINE_OPTIONS = {
   zIndex: 1,
 }
 
+// ─── Styled Components ────────────────────────────────
+
+const HomeRoot = styled(Box)({
+  height: '100%',
+  position: 'relative',
+  backgroundColor: '#000',
+})
+
+const MapContainer = styled(Box)({
+  position: 'absolute',
+  inset: 0,
+})
+
+const MapFallbackRoot = styled(Box)({
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#0d0d14',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+const MapFallbackText = styled(Typography)({
+  color: 'rgba(255,255,255,0.3)',
+  fontSize: 12,
+})
+
+const MapLoadingBox = styled(Box)({
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#0d0d14',
+})
+
+const TopGradient = styled('div')({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 140,
+  zIndex: 2,
+  background: 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%)',
+  pointerEvents: 'none',
+})
+
+// FloatingHeader styled elements
+const HeaderShell = styled('div')({
+  position: 'absolute',
+  top: 16,
+  left: 12,
+  right: 12,
+  zIndex: 30,
+  background: 'rgba(10,12,20,0.96)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 20,
+  padding: '10px 14px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+})
+const MotionHeaderShell = motion(HeaderShell)
+
+const HeaderLeft = styled(Box)({})
+
+const VehicleRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '5px',
+})
+
+const VehicleLabel = styled(Typography)({
+  fontSize: 15,
+  fontWeight: 800,
+  letterSpacing: '-0.4px',
+})
+
+const DeviceSubtitle = styled(Typography)({
+  color: 'rgba(255,255,255,0.26)',
+  fontSize: 10,
+  marginTop: '1px',
+})
+
+const HeaderRight = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+})
+
+const NotificationButton = styled(Button)({
+  minWidth: 0,
+  width: 30,
+  height: 30,
+  borderRadius: '50%',
+  padding: 0,
+  backgroundColor: 'rgba(255,255,255,0.07)',
+})
+
+const AvatarBadge = styled(Box)({
+  width: 30,
+  height: 30,
+  borderRadius: '50%',
+  background: 'linear-gradient(135deg, #C8FF00, #8FB800)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 11,
+  fontWeight: 800,
+  color: '#000',
+})
+
+// TripInfoCard styled elements
+const TripCardShell = styled('div')({
+  position: 'absolute',
+  top: 80,
+  left: 12,
+  right: 12,
+  zIndex: 20,
+  background: 'rgba(12,15,22,0.90)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255,255,255,0.09)',
+  borderRadius: 18,
+  padding: '10px 12px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+})
+const MotionTripCardShell = motion(TripCardShell)
+
+const TripCardContent = styled(Box)({
+  flex: 1,
+})
+
+const TripBadgeRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  marginBottom: '3px',
+})
+
+const TripBadge = styled(Box)({
+  backgroundColor: 'rgba(200,255,0,0.12)',
+  border: '1px solid rgba(200,255,0,0.22)',
+  borderRadius: '99px',
+  padding: '2px 8px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+})
+
+const TripBadgeLabel = styled(Typography)({
+  color: '#C8FF00',
+  fontSize: 9.5,
+  fontWeight: 700,
+})
+
+const TripTitle = styled(Typography)({
+  fontSize: 14,
+  fontWeight: 700,
+  marginBottom: '2px',
+})
+
+const TripDestRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '5px',
+})
+
+const TripDestIcon = styled(Box)({
+  width: 18,
+  height: 18,
+  borderRadius: '5px',
+  backgroundColor: 'rgba(255,255,255,0.08)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 8,
+  fontWeight: 800,
+  color: 'rgba(255,255,255,0.6)',
+})
+
+const TripDestText = styled(Typography)({
+  color: 'rgba(255,255,255,0.40)',
+  fontSize: 11,
+})
+
+const GoButton = styled(Button)({
+  minWidth: 0,
+  width: 42,
+  height: 42,
+  borderRadius: '13px',
+  padding: 0,
+  flexShrink: 0,
+  fontSize: 12,
+  fontWeight: 800,
+})
+
+// Recenter button
+const RecenterButton = styled(Button)({
+  position: 'absolute',
+  bottom: 90,
+  right: 16,
+  minWidth: 0,
+  width: 36,
+  height: 36,
+  borderRadius: '50%',
+  padding: 0,
+  backgroundColor: 'rgba(12,15,22,0.88)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  zIndex: 30,
+  boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
+})
+
+// ─── Motion wrappers ──────────────────────────────────
+
+const MotionNotificationButton = motion(NotificationButton)
+const MotionRecenterButton = motion(RecenterButton)
+const MotionGoButton = motion(GoButton)
+
+// ─── MapView ──────────────────────────────────────────
+
 function MapView() {
   const mapRef = useRef(null)
 
@@ -81,13 +305,13 @@ function MapView() {
 
   if (loadError) {
     return (
-      <Box sx={{ width: '100%', height: '100%', bgcolor: '#0d0d14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>Map unavailable</Typography>
-      </Box>
+      <MapFallbackRoot>
+        <MapFallbackText>Map unavailable</MapFallbackText>
+      </MapFallbackRoot>
     )
   }
 
-  if (!isLoaded) return <Box sx={{ width: '100%', height: '100%', bgcolor: '#0d0d14' }} />
+  if (!isLoaded) return <MapLoadingBox />
 
   return (
     <GoogleMap
@@ -106,52 +330,32 @@ function MapView() {
 
 // ─── Floating Header ──────────────────────────────────
 
-const MotionButton = motion(Button)
-
 function FloatingHeader() {
   const { vehicle } = useUserContext()
   const vehicleLabel = vehicle.nickname || vehicle.model || 'My Vehicle'
   return (
-    <motion.div
+    <MotionHeaderShell
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 28 }}
-      style={{
-        position: 'absolute', top: 16, left: 12, right: 12, zIndex: 30,
-        background: 'rgba(10,12,20,0.96)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 20, padding: '10px 14px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}
     >
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Typography sx={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.4px' }}>
-            {vehicleLabel}
-          </Typography>
+      <HeaderLeft>
+        <VehicleRow>
+          <VehicleLabel>{vehicleLabel}</VehicleLabel>
           <ChevronDown size={12} color="rgba(255,255,255,0.38)" />
-        </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.26)', fontSize: 10, mt: '1px' }}>
-          OBD-II · 352602116146553
-        </Typography>
-      </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <MotionButton
+        </VehicleRow>
+        <DeviceSubtitle>OBD-II · 352602116146553</DeviceSubtitle>
+      </HeaderLeft>
+      <HeaderRight>
+        <MotionNotificationButton
           whileTap={{ scale: 0.90 }}
           variant="outlined"
-          sx={{ minWidth: 0, width: 30, height: 30, borderRadius: '50%', p: 0, bgcolor: 'rgba(255,255,255,0.07)' }}
         >
           <Bell size={13} color="rgba(255,255,255,0.55)" />
-        </MotionButton>
-        <Box sx={{
-          width: 30, height: 30, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #C8FF00, #8FB800)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 11, fontWeight: 800, color: '#000',
-        }}>S</Box>
-      </Box>
-    </motion.div>
+        </MotionNotificationButton>
+        <AvatarBadge>S</AvatarBadge>
+      </HeaderRight>
+    </MotionHeaderShell>
   )
 }
 
@@ -159,46 +363,31 @@ function FloatingHeader() {
 
 function TripInfoCard() {
   return (
-    <motion.div
+    <MotionTripCardShell
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.28, type: 'spring', stiffness: 300, damping: 28 }}
-      style={{
-        position: 'absolute', top: 80, left: 12, right: 12, zIndex: 20,
-        background: 'rgba(12,15,22,0.90)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.09)',
-        borderRadius: 18, padding: '10px 12px',
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}
     >
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', mb: '3px' }}>
-          <Box sx={{
-            bgcolor: 'rgba(200,255,0,0.12)', border: '1px solid rgba(200,255,0,0.22)',
-            borderRadius: '99px', p: '2px 8px',
-            display: 'flex', alignItems: 'center', gap: '4px',
-          }}>
+      <TripCardContent>
+        <TripBadgeRow>
+          <TripBadge>
             <Zap size={9} color="#C8FF00" />
-            <Typography sx={{ color: 'primary.main', fontSize: 9.5, fontWeight: 700 }}>Live Trip</Typography>
-          </Box>
-        </Box>
-        <Typography sx={{ fontSize: 14, fontWeight: 700, mb: '2px' }}>Morning Commute</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Box sx={{ width: 18, height: 18, borderRadius: '5px', bgcolor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.6)' }}>
-            AC
-          </Box>
-          <Typography sx={{ color: 'rgba(255,255,255,0.40)', fontSize: 11 }}>Candace Ln · 5 mins away</Typography>
-        </Box>
-      </Box>
-      <MotionButton
+            <TripBadgeLabel>Live Trip</TripBadgeLabel>
+          </TripBadge>
+        </TripBadgeRow>
+        <TripTitle>Morning Commute</TripTitle>
+        <TripDestRow>
+          <TripDestIcon>AC</TripDestIcon>
+          <TripDestText>Candace Ln · 5 mins away</TripDestText>
+        </TripDestRow>
+      </TripCardContent>
+      <MotionGoButton
         whileTap={{ scale: 0.92 }}
         variant="contained"
-        sx={{ minWidth: 0, width: 42, height: 42, borderRadius: '13px', p: 0, flexShrink: 0, fontSize: 12, fontWeight: 800 }}
       >
         GO
-      </MotionButton>
-    </motion.div>
+      </MotionGoButton>
+    </MotionTripCardShell>
   )
 }
 
@@ -206,40 +395,27 @@ function TripInfoCard() {
 
 export default function Home() {
   return (
-    <Box sx={{ height: '100%', position: 'relative', bgcolor: '#000' }}>
+    <HomeRoot>
 
       {/* Full-screen map */}
-      <Box sx={{ position: 'absolute', inset: 0 }}>
+      <MapContainer>
         <MapView />
-      </Box>
+      </MapContainer>
 
       {/* Top gradient — prevents map bleed behind header cards */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 140, zIndex: 2,
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%)',
-        pointerEvents: 'none',
-      }} />
+      <TopGradient />
 
       <FloatingHeader />
       <TripInfoCard />
 
       {/* Recenter button */}
-      <MotionButton
+      <MotionRecenterButton
         whileTap={{ scale: 0.90 }}
         variant="outlined"
-        sx={{
-          position: 'absolute',
-          bottom: 90, right: 16,
-          minWidth: 0, width: 36, height: 36, borderRadius: '50%', p: 0,
-          bgcolor: 'rgba(12,15,22,0.88)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          zIndex: 30,
-          boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
-        }}
       >
         <LocateFixed size={15} color="#C8FF00" />
-      </MotionButton>
+      </MotionRecenterButton>
 
-    </Box>
+    </HomeRoot>
   )
 }

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Box, Typography, IconButton } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { ChevronRight, SlidersHorizontal, Route } from 'lucide-react'
 import { glassCard } from '../styles/glass'
 
@@ -29,6 +30,136 @@ const grouped = TRIPS.reduce<Record<string, Trip[]>>((acc, trip) => {
   return acc
 }, {})
 
+// ─── Styled components ────────────────────────────────────
+
+const TripsRoot = styled(Box)({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  backgroundColor: 'transparent',
+  paddingTop: '16px',
+})
+
+const TripsHeader = styled(Box)({
+  padding: '14px 20px 12px',
+  backgroundColor: 'rgba(255,255,255,0.05)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  borderBottom: '1px solid rgba(255,255,255,0.07)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexShrink: 0,
+})
+
+const TripsHeaderTitle = styled(Typography)({
+  fontSize: 22,
+  fontWeight: 800,
+  letterSpacing: '-0.5px',
+})
+
+const TripsFilterButton = styled(IconButton)({
+  backgroundColor: 'rgba(255,255,255,0.07)',
+  borderRadius: '10px',
+  width: 36,
+  height: 36,
+})
+
+const TripListScroll = styled(Box)({
+  flex: 1,
+  overflowY: 'auto',
+  padding: '12px 16px',
+  paddingBottom: `${82 + 12}px`,
+})
+
+const TripEmptyState = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '60%',
+  gap: '12px',
+  opacity: 0.5,
+})
+
+const TripEmptyText = styled(Typography)({
+  color: 'rgba(255,255,255,0.40)',
+  fontSize: 14,
+  textAlign: 'center',
+  maxWidth: 220,
+})
+
+const TripDateGroup = styled(Box)({
+  marginBottom: '4px',
+})
+
+const TripDateLabel = styled(Typography)({
+  color: 'rgba(255,255,255,0.35)',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.6px',
+  textTransform: 'uppercase',
+  marginBottom: '8px',
+  paddingLeft: '2px',
+})
+
+const TripCardRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '13px 14px',
+  ...glassCard,
+  borderRadius: '14px',
+  marginBottom: '8px',
+  cursor: 'pointer',
+})
+
+const TripColorStripe = styled(Box)<{ stripecolor: string }>(({ stripecolor }) => ({
+  width: 3,
+  height: 44,
+  borderRadius: '4px',
+  backgroundColor: stripecolor,
+  flexShrink: 0,
+  opacity: 0.7,
+}))
+
+const TripInfoBlock = styled(Box)({
+  flex: 1,
+  minWidth: 0,
+})
+
+const TripName = styled(Typography)({
+  fontSize: 14,
+  fontWeight: 600,
+  marginBottom: '3px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+})
+
+const TripTime = styled(Typography)({
+  color: 'rgba(255,255,255,0.45)',
+  fontSize: 12,
+})
+
+const TripStatsBlock = styled(Box)({
+  textAlign: 'right',
+  flexShrink: 0,
+})
+
+const TripDistance = styled(Typography)({
+  fontSize: 14,
+  fontWeight: 700,
+  marginBottom: '3px',
+})
+
+const TripDuration = styled(Typography)({
+  color: 'rgba(255,255,255,0.45)',
+  fontSize: 12,
+})
+
+// ─── TripCard ─────────────────────────────────────────────
+
 interface TripCardProps {
   trip: Trip
   index: number
@@ -42,41 +173,32 @@ function TripCard({ trip, index }: TripCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: cappedDelay, type: 'spring', stiffness: 320, damping: 28 }}
     >
-      <Box sx={{
-        display: 'flex', alignItems: 'center', gap: '12px',
-        p: '13px 14px',
-        ...glassCard,
-        borderRadius: '14px', mb: '8px',
-        cursor: 'pointer',
-      }}>
+      <TripCardRow>
         {/* Color stripe */}
-        <Box sx={{ width: 3, height: 44, borderRadius: '4px', bgcolor: trip.color, flexShrink: 0, opacity: 0.7 }} />
+        <TripColorStripe stripecolor={trip.color} />
 
         {/* Trip info */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{
-            color: 'text.primary', fontSize: 14, fontWeight: 600, mb: '3px',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
+        <TripInfoBlock>
+          <TripName color="text.primary">
             {trip.name}
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>
+          </TripName>
+          <TripTime>
             {trip.start} → {trip.end}
-          </Typography>
-        </Box>
+          </TripTime>
+        </TripInfoBlock>
 
         {/* Stats */}
-        <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-          <Typography sx={{ color: 'text.primary', fontSize: 14, fontWeight: 700, mb: '3px' }}>
+        <TripStatsBlock>
+          <TripDistance color="text.primary">
             {trip.distance}
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>
+          </TripDistance>
+          <TripDuration>
             {trip.duration}
-          </Typography>
-        </Box>
+          </TripDuration>
+        </TripStatsBlock>
 
         <ChevronRight size={16} color="rgba(255,255,255,0.20)" style={{ flexShrink: 0 }} />
-      </Box>
+      </TripCardRow>
     </motion.div>
   )
 }
@@ -85,52 +207,40 @@ export default function Trips() {
   let index = 0
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'transparent', pt: '16px' }}>
+    <TripsRoot>
 
       {/* Header */}
-      <Box sx={{
-        p: '14px 20px 12px',
-        bgcolor: 'rgba(255,255,255,0.05)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
-        <Typography sx={{ color: 'text.primary', fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px' }}>
+      <TripsHeader>
+        <TripsHeaderTitle color="text.primary">
           Trips
-        </Typography>
-        <IconButton sx={{ bgcolor: 'rgba(255,255,255,0.07)', borderRadius: '10px', width: 36, height: 36 }}>
+        </TripsHeaderTitle>
+        <TripsFilterButton>
           <SlidersHorizontal size={16} color="rgba(255,255,255,0.60)" />
-        </IconButton>
-      </Box>
+        </TripsFilterButton>
+      </TripsHeader>
 
       {/* Trip list */}
-      <Box sx={{ flex: 1, overflowY: 'auto', p: '12px 16px', pb: `${82 + 12}px` }}>
+      <TripListScroll>
         {TRIPS.length === 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: '12px', opacity: 0.5 }}>
+          <TripEmptyState>
             <Route size={36} color="rgba(255,255,255,0.30)" />
-            <Typography sx={{ color: 'rgba(255,255,255,0.40)', fontSize: 14, textAlign: 'center', maxWidth: 220 }}>
+            <TripEmptyText>
               No trips yet. Start driving to see your history here.
-            </Typography>
-          </Box>
+            </TripEmptyText>
+          </TripEmptyState>
         ) : (
           Object.entries(grouped).map(([date, trips]) => (
-            <Box key={date} sx={{ mb: '4px' }}>
-              <Typography sx={{
-                color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 700,
-                letterSpacing: '0.6px', textTransform: 'uppercase',
-                mb: '8px', pl: '2px',
-              }}>
+            <TripDateGroup key={date}>
+              <TripDateLabel>
                 {date}
-              </Typography>
+              </TripDateLabel>
               {trips.map(trip => (
                 <TripCard key={trip.id} trip={trip} index={index++} />
               ))}
-            </Box>
+            </TripDateGroup>
           ))
         )}
-      </Box>
-    </Box>
+      </TripListScroll>
+    </TripsRoot>
   )
 }

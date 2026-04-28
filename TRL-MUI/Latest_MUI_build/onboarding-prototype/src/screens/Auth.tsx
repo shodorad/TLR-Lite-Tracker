@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Box, Typography, Button } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { Fingerprint, Check, ArrowLeft } from 'lucide-react'
 import { glassCard } from '../styles/glass'
 
@@ -28,9 +29,199 @@ function GoogleIcon() {
   )
 }
 
-// ─── Biometric button ──────────────────────────────────
+// ─── Styled components ────────────────────────────────
 
 const MotionButton = motion(Button)
+
+const AuthRoot = styled(Box)({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  paddingTop: '16px',
+})
+
+const BackButtonWrapper = styled(Box)({
+  padding: '12px 20px 0',
+})
+
+const BackButton = styled(MotionButton)({
+  minWidth: 0,
+  width: 44,
+  height: 44,
+  borderRadius: '14px',
+  padding: 0,
+  background: 'rgba(255,255,255,0.07)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+})
+
+const AuthBody = styled(Box)({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+  padding: '28px 26px 0',
+})
+
+const AuthHeading = styled(Typography)({
+  fontSize: 30,
+  fontWeight: 900,
+  letterSpacing: '-0.8px',
+  marginBottom: '7px',
+})
+
+const AuthSubtitle = styled(Typography)({
+  fontSize: 14.5,
+})
+
+const OAuthAppleButton = styled(MotionButton)({
+  height: 54,
+  borderRadius: '18px',
+  fontSize: 16,
+  fontWeight: 700,
+  letterSpacing: '-0.2px',
+  gap: '10px',
+})
+
+const OAuthGoogleButton = styled(MotionButton)({
+  height: 50,
+  borderRadius: '16px',
+  fontSize: 15,
+  fontWeight: 600,
+  background: 'rgba(255,255,255,0.07)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  gap: '10px',
+})
+
+const DividerRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '14px',
+  marginTop: '2px',
+  marginBottom: '2px',
+})
+
+const DividerLine = styled(Box)({
+  flex: 1,
+  height: '1px',
+  background: 'rgba(255,255,255,0.07)',
+})
+
+const DividerLabel = styled(Typography)({
+  fontSize: 12,
+  color: 'rgba(255,255,255,0.22)',
+})
+
+const EmailButton = styled(MotionButton)({
+  color: 'rgba(255,255,255,0.55)',
+  fontSize: 15,
+  fontWeight: 600,
+})
+
+const SignInRow = styled(Box)({
+  marginTop: 24,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 5,
+})
+
+const SignInPromptText = styled(Typography)({
+  fontSize: 13.5,
+  color: 'rgba(255,255,255,0.32)',
+})
+
+const SignInLink = styled(MotionButton)({
+  color: '#C8FF00',
+  fontSize: 13.5,
+  fontWeight: 700,
+  padding: 0,
+  minWidth: 0,
+})
+
+const BiometricCard = styled(motion.div)({
+  marginTop: 32,
+  borderRadius: 18,
+  padding: '18px',
+  ...glassCard,
+})
+
+const BiometricSectionLabel = styled(Typography)({
+  color: 'rgba(255,255,255,0.30)',
+  fontSize: 10.5,
+  fontWeight: 700,
+  letterSpacing: '0.9px',
+  textTransform: 'uppercase',
+  marginBottom: '14px',
+})
+
+const BiometricRow = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '12px',
+})
+
+const BiometricTitle = styled(Typography)({
+  fontSize: 14,
+  fontWeight: 600,
+  marginBottom: '3px',
+})
+
+const BiometricCaption = styled(Typography)({
+  fontSize: 12,
+  color: 'rgba(255,255,255,0.32)',
+})
+
+const FaceIDButtonRoot = styled(MotionButton)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  padding: '12px 18px',
+  borderRadius: '14px',
+  background: 'rgba(255,255,255,0.06)',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
+  minWidth: 0,
+  transition: 'border-color 0.3s',
+})
+
+const FaceIDLabel = styled(Typography)({
+  fontSize: 13.5,
+  fontWeight: 600,
+  lineHeight: 1.2,
+  transition: 'color 0.3s',
+})
+
+const FaceIDCaption = styled(Typography)({
+  fontSize: 11.5,
+  color: 'rgba(255,255,255,0.32)',
+})
+
+const LegalText = styled(Typography)({
+  color: 'rgba(255,255,255,0.55)',
+  fontSize: 11,
+  textAlign: 'center',
+  padding: '0 32px 24px',
+  lineHeight: 1.5,
+})
+
+const LegalLink = styled('span')({
+  color: 'rgba(255,255,255,0.75)',
+  textDecoration: 'underline',
+})
+
+const EmailArrow = styled('span')({
+  color: '#C8FF00',
+  marginLeft: '4px',
+})
+
+const Spacer = styled(Box)({
+  flex: 1,
+})
+
+// ─── Biometric button ──────────────────────────────────
 
 function FaceIDButton({ onClick }) {
   const [state, setState] = useState('idle') // idle | scanning | verified
@@ -46,20 +237,11 @@ function FaceIDButton({ onClick }) {
   const borderColor = state === 'verified' ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.10)'
 
   return (
-    <MotionButton
+    <FaceIDButtonRoot
       whileTap={{ scale: 0.90 }}
       onClick={handlePress}
       variant="outlined"
-      sx={{
-        display: 'flex', alignItems: 'center', gap: '8px',
-        p: '12px 18px', borderRadius: '14px',
-        background: 'rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderColor,
-        transition: 'border-color 0.3s',
-        minWidth: 0,
-      }}
+      sx={{ borderColor }}
     >
       {state === 'scanning' ? (
         <motion.span
@@ -82,18 +264,14 @@ function FaceIDButton({ onClick }) {
         <Fingerprint size={20} color={color} />
       )}
       <Box sx={{ textAlign: 'left' }}>
-        <Typography sx={{
-          color: state === 'verified' ? '#4ade80' : 'text.primary',
-          fontSize: 13.5, fontWeight: 600, lineHeight: 1.2,
-          transition: 'color 0.3s',
-        }}>
+        <FaceIDLabel sx={{ color: state === 'verified' ? '#4ade80' : 'text.primary' }}>
           {state === 'verified' ? 'Verified' : 'Use Face ID'}
-        </Typography>
-        <Typography variant="caption" sx={{ fontSize: 11.5, color: 'rgba(255,255,255,0.32)' }}>
+        </FaceIDLabel>
+        <FaceIDCaption variant="caption">
           Quick, secure re-entry
-        </Typography>
+        </FaceIDCaption>
       </Box>
-    </MotionButton>
+    </FaceIDButtonRoot>
   )
 }
 
@@ -107,28 +285,22 @@ interface AuthProps {
 
 export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', pt: '16px' }}>
+    <AuthRoot>
 
       {/* Back button */}
-      <Box sx={{ p: '12px 20px 0' }}>
-        <MotionButton
+      <BackButtonWrapper>
+        <BackButton
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           whileTap={{ scale: 0.90 }}
           onClick={back}
           variant="outlined"
-          sx={{
-            minWidth: 0, width: 44, height: 44, borderRadius: '14px', p: 0,
-            background: 'rgba(255,255,255,0.07)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
         >
           <ArrowLeft size={17} color="rgba(255,255,255,0.80)" />
-        </MotionButton>
-      </Box>
+        </BackButton>
+      </BackButtonWrapper>
 
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', p: '28px 26px 0' }}>
+      <AuthBody>
 
         {/* Heading */}
         <motion.div
@@ -137,12 +309,12 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
           transition={{ delay: 0.06, type: 'spring', stiffness: 300, damping: 28 }}
           style={{ marginBottom: 32 }}
         >
-          <Typography sx={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.8px', mb: '7px' }}>
+          <AuthHeading>
             Create your account
-          </Typography>
-          <Typography variant="caption" sx={{ fontSize: 14.5 }}>
+          </AuthHeading>
+          <AuthSubtitle variant="caption">
             Choose how you'd like to get started.
-          </Typography>
+          </AuthSubtitle>
         </motion.div>
 
         {/* OAuth buttons */}
@@ -153,54 +325,45 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
           style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
         >
           {/* Apple — primary */}
-          <MotionButton
+          <OAuthAppleButton
             fullWidth
             variant="contained"
             whileTap={{ scale: 0.97 }}
             onClick={onOAuthLogin || next}
-            sx={{ height: 54, borderRadius: '18px', fontSize: 16, fontWeight: 700, letterSpacing: '-0.2px', gap: '10px' }}
           >
             <AppleIcon />
             Continue with Apple
-          </MotionButton>
+          </OAuthAppleButton>
 
           {/* Google — secondary glass */}
-          <MotionButton
+          <OAuthGoogleButton
             fullWidth
             variant="outlined"
             whileTap={{ scale: 0.97 }}
             onClick={onOAuthLogin || next}
-            sx={{
-              height: 50, borderRadius: '16px', fontSize: 15, fontWeight: 600,
-              background: 'rgba(255,255,255,0.07)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              color: 'text.primary',
-              gap: '10px',
-            }}
+            sx={{ color: 'text.primary' }}
           >
             <GoogleIcon />
             Continue with Google
-          </MotionButton>
+          </OAuthGoogleButton>
 
           {/* Divider */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '14px', my: '2px' }}>
-            <Box sx={{ flex: 1, height: '1px', bgcolor: 'rgba(255,255,255,0.07)' }} />
-            <Typography variant="caption" sx={{ fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>or</Typography>
-            <Box sx={{ flex: 1, height: '1px', bgcolor: 'rgba(255,255,255,0.07)' }} />
-          </Box>
+          <DividerRow>
+            <DividerLine />
+            <DividerLabel variant="caption">or</DividerLabel>
+            <DividerLine />
+          </DividerRow>
 
           {/* Email — tertiary */}
-          <MotionButton
+          <EmailButton
             fullWidth
             variant="text"
             whileTap={{ scale: 0.97 }}
             onClick={next}
-            sx={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, fontWeight: 600 }}
           >
             Sign up with Email{' '}
-            <Box component="span" sx={{ color: 'primary.main', ml: '4px' }}>→</Box>
-          </MotionButton>
+            <EmailArrow>→</EmailArrow>
+          </EmailButton>
         </motion.div>
 
         {/* Sign in link */}
@@ -208,50 +371,46 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.28 }}
-          style={{ marginTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
         >
-          <Typography variant="caption" sx={{ fontSize: 13.5, color: 'rgba(255,255,255,0.32)' }}>
-            Already have an account?
-          </Typography>
-          <MotionButton
-            variant="text"
-            whileTap={{ scale: 0.95 }}
-            onClick={next}
-            sx={{ color: 'primary.main', fontSize: 13.5, fontWeight: 700, p: 0, minWidth: 0 }}
-          >
-            Sign in
-          </MotionButton>
+          <SignInRow>
+            <SignInPromptText variant="caption">
+              Already have an account?
+            </SignInPromptText>
+            <SignInLink
+              variant="text"
+              whileTap={{ scale: 0.95 }}
+              onClick={next}
+            >
+              Sign in
+            </SignInLink>
+          </SignInRow>
         </motion.div>
 
         {/* Returning user section */}
-        <motion.div
+        <BiometricCard
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.22 }}
-          style={{ marginTop: 32, ...glassCard, borderRadius: 18, padding: '18px' }}
         >
-          <Typography sx={{
-            color: 'rgba(255,255,255,0.30)', fontSize: 10.5, fontWeight: 700,
-            letterSpacing: '0.9px', textTransform: 'uppercase', mb: '14px',
-          }}>
+          <BiometricSectionLabel>
             Returning user
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          </BiometricSectionLabel>
+          <BiometricRow>
             <Box>
-              <Typography sx={{ fontSize: 14, fontWeight: 600, mb: '3px' }}>
+              <BiometricTitle>
                 Sign in with Face ID
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: 12, color: 'rgba(255,255,255,0.32)' }}>
+              </BiometricTitle>
+              <BiometricCaption variant="caption">
                 Instant access to your account
-              </Typography>
+              </BiometricCaption>
             </Box>
             <FaceIDButton onClick={next} />
-          </Box>
-        </motion.div>
+          </BiometricRow>
+        </BiometricCard>
 
-      </Box>
+      </AuthBody>
 
-      <Box sx={{ flex: 1 }} />
+      <Spacer />
 
       {/* Legal disclaimer */}
       <motion.div
@@ -259,17 +418,14 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.32 }}
       >
-        <Typography sx={{
-          color: 'rgba(255,255,255,0.55)', fontSize: 11, textAlign: 'center',
-          p: '0 32px 24px', lineHeight: 1.5,
-        }}>
+        <LegalText>
           By continuing, you agree to our{' '}
-          <Box component="span" sx={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'underline' }}>Terms of Service</Box>
+          <LegalLink>Terms of Service</LegalLink>
           {' '}and{' '}
-          <Box component="span" sx={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'underline' }}>Privacy Policy</Box>
-        </Typography>
+          <LegalLink>Privacy Policy</LegalLink>
+        </LegalText>
       </motion.div>
 
-    </Box>
+    </AuthRoot>
   )
 }
