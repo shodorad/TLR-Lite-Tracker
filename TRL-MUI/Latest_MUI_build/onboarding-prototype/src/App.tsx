@@ -1,18 +1,13 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { styled } from '@mui/material/styles'
-import Welcome from './screens/Welcome'
-import Auth from './screens/Auth'
-import SignUp from './screens/SignUp'
-import AddVehicle from './screens/AddVehicle'
-import VehicleDetails from './screens/VehicleDetails'
-import ScanDevice from './screens/ScanDevice'
-import DeviceSetupWizard from './screens/DeviceSetupWizard'
-import ChoosePlan from './screens/ChoosePlan'
-import Success from './screens/Success'
-import Home from './screens/Home'
-import Trips from './screens/Trips'
-import Settings from './screens/Settings'
+import {
+  ONBOARDING_SCREENS,
+  renderOnboardingScreen,
+  renderMainScreen,
+  type OnboardingScreen,
+  type MainScreen,
+} from './routes'
 import BottomTabs from './components/BottomTabs'
 import ConversationalPanel from './components/ConversationalPanel'
 
@@ -60,9 +55,7 @@ const OnboardingFrame = styled('div')({
 const MotionMainApp = motion(MainAppInner)
 const MotionOnboardingSlide = motion(OnboardingSlide)
 
-// ─── Constants ────────────────────────────────────────
-
-const SCREENS = ['welcome', 'auth', 'signup', 'scan', 'vehicle', 'details', 'deviceSetup', 'choosePlan', 'success']
+// ─── Animation ────────────────────────────────────────
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
@@ -72,39 +65,26 @@ const slideVariants = {
 
 const transition = { type: 'spring', stiffness: 380, damping: 38, mass: 0.8 }
 
+// ─── App ──────────────────────────────────────────────
+
 export default function App() {
   const [step, setStep]             = useState(0)
   const [dir, setDir]               = useState(1)
-  const [appPhase, setAppPhase]     = useState('onboarding')
-  const [mainScreen, setMainScreen] = useState('home')
+  const [appPhase, setAppPhase]     = useState<'onboarding' | 'main'>('onboarding')
+  const [mainScreen, setMainScreen] = useState<MainScreen>('home')
   const [panelOpen, setPanelOpen]   = useState(false)
 
-  const next        = () => { setDir(1);  setStep(s => Math.min(s + 1, SCREENS.length - 1)) }
-  const back        = () => { setDir(-1); setStep(s => Math.max(s - 1, 0)) }
-  const goTo        = (i: number) => { setDir(i > step ? 1 : -1); setStep(i) }
-  const enterApp    = () => setAppPhase('main')
-  const skipToScan  = () => { setDir(1); setStep(SCREENS.indexOf('scan')) }
+  const next       = () => { setDir(1);  setStep(s => Math.min(s + 1, ONBOARDING_SCREENS.length - 1)) }
+  const back       = () => { setDir(-1); setStep(s => Math.max(s - 1, 0)) }
+  const goTo       = (i: number) => { setDir(i > step ? 1 : -1); setStep(i) }
+  const enterApp   = () => setAppPhase('main')
+  const skipToScan = () => { setDir(1); setStep(ONBOARDING_SCREENS.indexOf('scan')) }
 
-  const screen          = SCREENS[step]
+  const screen          = ONBOARDING_SCREENS[step] as OnboardingScreen
   const onboardingStep  = step - 2
   const totalOnboarding = 6
 
   const screenProps = { next, back, goTo, step: onboardingStep, total: totalOnboarding, onEnterApp: enterApp, onOAuthLogin: skipToScan }
-
-  const renderOnboardingScreen = () => {
-    switch (screen) {
-      case 'welcome': return <Welcome    {...screenProps} />
-      case 'auth':    return <Auth       {...screenProps} />
-      case 'signup':  return <SignUp     {...screenProps} />
-      case 'vehicle': return <AddVehicle {...screenProps} />
-      case 'details': return <VehicleDetails {...screenProps} />
-      case 'scan':        return <ScanDevice        {...screenProps} />
-      case 'deviceSetup': return <DeviceSetupWizard {...screenProps} />
-      case 'choosePlan':  return <ChoosePlan        {...screenProps} />
-      case 'success':     return <Success            {...screenProps} onEnterApp={enterApp} />
-      default:        return null
-    }
-  }
 
   const isMainApp = appPhase === 'main'
 
@@ -117,18 +97,16 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 28 }}
         >
-          {/* Left content — shrinks when panel opens */}
           <ContentPane>
-            {mainScreen === 'home' ? <Home /> : mainScreen === 'trips' ? <Trips /> : <Settings />}
+            {renderMainScreen(mainScreen)}
             <BottomTabs
               current={mainScreen}
-              onNavigate={setMainScreen}
+              onNavigate={(id) => setMainScreen(id as MainScreen)}
               onChatOpen={() => setPanelOpen(true)}
               chatActive={panelOpen}
             />
           </ContentPane>
 
-          {/* Right panel — slides in and pushes layout */}
           <ConversationalPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
         </MotionMainApp>
       ) : (
@@ -143,7 +121,7 @@ export default function App() {
             transition={transition}
           >
             <OnboardingFrame>
-              {renderOnboardingScreen()}
+              {renderOnboardingScreen(screen, screenProps)}
             </OnboardingFrame>
           </MotionOnboardingSlide>
         </AnimatePresence>

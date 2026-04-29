@@ -1,4 +1,4 @@
-import carImage from '../../Car_images/vecteezy_white-city-car-isolated-on-transparent-background-3d_29913559.png'
+import carImage from '../assets/images/car-3d.png'
 
 /**
  * Car3D — 3/4 perspective render with GPS pin overlay.
