@@ -8,12 +8,13 @@ import VehicleDetails from './screens/VehicleDetails.jsx'
 import ScanDevice from './screens/ScanDevice.jsx'
 import DeviceSetupWizard from './screens/DeviceSetupWizard.jsx'
 import Success from './screens/Success.jsx'
+import PricingOverview from './screens/PricingOverview.jsx'
 import Home from './screens/Home.jsx'
 import Trips from './screens/Trips.jsx'
 import Settings from './screens/Settings.jsx'
 import BottomTabs from './components/BottomTabs.jsx'
 
-const SCREENS = ['welcome', 'auth', 'signup', 'scan', 'vehicle', 'details', 'deviceSetup', 'success']
+const SCREENS = ['welcome', 'auth', 'signup', 'pricing', 'scan', 'vehicle', 'details', 'deviceSetup', 'success']
 
 const slideVariants = {
   enter: (dir) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
@@ -37,7 +38,7 @@ export default function App() {
 
   const screen          = SCREENS[step]
   const onboardingStep  = step - 2
-  const totalOnboarding = 5
+  const totalOnboarding = 6
 
   const screenProps = { next, back, goTo, step: onboardingStep, total: totalOnboarding, onEnterApp: enterApp, onOAuthLogin: skipToScan }
 
@@ -45,8 +46,9 @@ export default function App() {
     switch (screen) {
       case 'welcome': return <Welcome    {...screenProps} />
       case 'auth':    return <Auth       {...screenProps} />
-      case 'signup':  return <SignUp     {...screenProps} />
-      case 'vehicle': return <AddVehicle {...screenProps} />
+      case 'signup':  return <SignUp          {...screenProps} />
+      case 'pricing': return <PricingOverview {...screenProps} />
+      case 'vehicle': return <AddVehicle      {...screenProps} />
       case 'details': return <VehicleDetails {...screenProps} />
       case 'scan':        return <ScanDevice        {...screenProps} />
       case 'deviceSetup': return <DeviceSetupWizard {...screenProps} />
