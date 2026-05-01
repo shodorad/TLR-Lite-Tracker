@@ -33,24 +33,24 @@ const PLANS = [
     forProfiles: ['Families tracking teen drivers', 'Personal vehicle security', 'Monitoring elderly relatives'],
     features: {
       tracking: [
-        { Icon: MapPin,       text: 'Real-time GPS tracking' },
-        { Icon: Zap,          text: 'Speed & trip alerts' },
-        { Icon: Shield,       text: 'Geofence zones (up to 5)' },
-        { Icon: Route,        text: '30-day trip history' },
-        { Icon: Clock,        text: 'Live map view' },
+        { Icon: MapPin,        text: 'Real-time GPS tracking' },
+        { Icon: Zap,           text: 'Speed & trip alerts' },
+        { Icon: Shield,        text: 'Geofence zones (up to 5)' },
+        { Icon: Route,         text: '30-day trip history' },
+        { Icon: Clock,         text: 'Live map view' },
       ],
       fleet: [
-        { Icon: Users,        text: 'Up to 3 vehicles' },
-        { Icon: UserCheck,    text: 'Single driver profile' },
-        { Icon: AlertTriangle,text: 'Vehicle health status' },
+        { Icon: Users,         text: 'Up to 3 vehicles' },
+        { Icon: UserCheck,     text: 'Single driver profile' },
+        { Icon: AlertTriangle, text: 'Vehicle health status' },
       ],
       reporting: [
-        { Icon: BarChart3,    text: 'Monthly mileage report' },
-        { Icon: Route,        text: 'Trip summary export' },
+        { Icon: BarChart3,     text: 'Monthly mileage report' },
+        { Icon: Route,         text: 'Trip summary export' },
       ],
       support: [
-        { Icon: Headphones,   text: 'In-app help centre' },
-        { Icon: Bell,         text: 'Email support (48 h)' },
+        { Icon: Headphones,    text: 'In-app help centre' },
+        { Icon: Bell,          text: 'Email support (48 h)' },
       ],
     },
     includedFrom: null,
@@ -77,30 +77,30 @@ const PLANS = [
     forProfiles: ['Small delivery fleets', 'Field service & repair crews', 'Construction & equipment teams'],
     features: {
       tracking: [
-        { Icon: MapPin,       text: 'Idle time & stopover alerts' },
-        { Icon: Shield,       text: 'Custom geofence rules (up to 50)' },
-        { Icon: Zap,          text: 'Live driver status board' },
-        { Icon: Bell,         text: 'Arrival / departure notifications' },
+        { Icon: MapPin,           text: 'Idle time & stopover alerts' },
+        { Icon: Shield,           text: 'Custom geofence rules (up to 50)' },
+        { Icon: Zap,              text: 'Live driver status board' },
+        { Icon: Bell,             text: 'Arrival / departure notifications' },
       ],
       fleet: [
-        { Icon: Users,        text: 'Up to 20 vehicles' },
-        { Icon: UserCheck,    text: 'Up to 10 driver profiles' },
-        { Icon: Star,         text: 'Driver behaviour scoring' },
-        { Icon: Fuel,         text: 'Fuel tracking & expense log' },
-        { Icon: Wrench,       text: 'Maintenance reminders & service alerts' },
-        { Icon: Route,        text: 'Route replay (90 days)' },
-        { Icon: LayoutDashboard, text: 'Fleet operations dashboard' },
+        { Icon: Users,            text: 'Up to 20 vehicles' },
+        { Icon: UserCheck,        text: 'Up to 10 driver profiles' },
+        { Icon: Star,             text: 'Driver behaviour scoring' },
+        { Icon: Fuel,             text: 'Fuel tracking & expense log' },
+        { Icon: Wrench,           text: 'Maintenance reminders & service alerts' },
+        { Icon: Route,            text: 'Route replay (90 days)' },
+        { Icon: LayoutDashboard,  text: 'Fleet operations dashboard' },
       ],
       reporting: [
-        { Icon: BarChart3,    text: 'Advanced trip reports' },
-        { Icon: Download,     text: 'CSV & PDF export' },
-        { Icon: UserCheck,    text: 'Driver scorecards' },
-        { Icon: Route,        text: '90-day trip history' },
-        { Icon: Bell,         text: 'Slack & email alerts' },
+        { Icon: BarChart3,        text: 'Advanced trip reports' },
+        { Icon: Download,         text: 'CSV & PDF export' },
+        { Icon: UserCheck,        text: 'Driver scorecards' },
+        { Icon: Route,            text: '90-day trip history' },
+        { Icon: Bell,             text: 'Slack & email alerts' },
       ],
       support: [
-        { Icon: Headphones,   text: 'Priority email support (24 h)' },
-        { Icon: Phone,        text: 'Onboarding setup call' },
+        { Icon: Headphones,       text: 'Priority email support (24 h)' },
+        { Icon: Phone,            text: 'Onboarding setup call' },
       ],
     },
     includedFrom: 'Personal',
@@ -127,31 +127,31 @@ const PLANS = [
     forProfiles: ['Regional logistics companies', 'Franchise & multi-site ops', 'Government & enterprise fleets'],
     features: {
       tracking: [
-        { Icon: MapPin,       text: 'Custom alert thresholds' },
-        { Icon: Shield,       text: 'Multi-location zone management' },
-        { Icon: Zap,          text: 'Real-time traffic overlays' },
-        { Icon: Globe,        text: 'Cross-region fleet visibility' },
+        { Icon: MapPin,           text: 'Custom alert thresholds' },
+        { Icon: Shield,           text: 'Multi-location zone management' },
+        { Icon: Zap,              text: 'Real-time traffic overlays' },
+        { Icon: Globe,            text: 'Cross-region fleet visibility' },
       ],
       fleet: [
-        { Icon: Users,        text: 'Unlimited vehicles' },
-        { Icon: UserCheck,    text: 'Unlimited driver profiles' },
-        { Icon: LayoutDashboard, text: 'Multi-admin accounts' },
-        { Icon: Truck,        text: 'Sub-fleet grouping & tagging' },
-        { Icon: Globe,        text: 'API access (REST + webhooks)' },
-        { Icon: Download,     text: 'White-label report branding' },
+        { Icon: Users,            text: 'Unlimited vehicles' },
+        { Icon: UserCheck,        text: 'Unlimited driver profiles' },
+        { Icon: LayoutDashboard,  text: 'Multi-admin accounts' },
+        { Icon: Truck,            text: 'Sub-fleet grouping & tagging' },
+        { Icon: Globe,            text: 'API access (REST + webhooks)' },
+        { Icon: Download,         text: 'White-label report branding' },
       ],
       reporting: [
-        { Icon: Route,        text: '1-year trip history archive' },
-        { Icon: BarChart3,    text: 'Custom report builder' },
-        { Icon: LayoutDashboard, text: 'KPI dashboards' },
-        { Icon: Bell,         text: 'Automated scheduled reports' },
-        { Icon: Shield,       text: 'Audit trail & compliance logs' },
+        { Icon: Route,            text: '1-year trip history archive' },
+        { Icon: BarChart3,        text: 'Custom report builder' },
+        { Icon: LayoutDashboard,  text: 'KPI dashboards' },
+        { Icon: Bell,             text: 'Automated scheduled reports' },
+        { Icon: Shield,           text: 'Audit trail & compliance logs' },
       ],
       support: [
-        { Icon: UserCheck,    text: 'Dedicated account manager' },
-        { Icon: Phone,        text: 'Phone support + 4 h SLA' },
-        { Icon: Star,         text: 'Custom onboarding programme' },
-        { Icon: Headphones,   text: 'Priority bug escalation' },
+        { Icon: UserCheck,        text: 'Dedicated account manager' },
+        { Icon: Phone,            text: 'Phone support + 4 h SLA' },
+        { Icon: Star,             text: 'Custom onboarding programme' },
+        { Icon: Headphones,       text: 'Priority bug escalation' },
       ],
     },
     includedFrom: 'Fleet',
@@ -160,10 +160,10 @@ const PLANS = [
 ]
 
 const CATEGORY_META = {
-  tracking:  { label: 'Tracking & Alerts',   Icon: MapPin },
-  fleet:     { label: 'Fleet Management',     Icon: Truck },
-  reporting: { label: 'Reporting & Analytics',Icon: BarChart3 },
-  support:   { label: 'Support',              Icon: Headphones },
+  tracking:  { label: 'Tracking & Alerts',    Icon: MapPin },
+  fleet:     { label: 'Fleet Management',      Icon: Truck },
+  reporting: { label: 'Reporting & Analytics', Icon: BarChart3 },
+  support:   { label: 'Support',               Icon: Headphones },
 }
 
 /* ─── Billing Toggle ────────────────────────────────────────────────────── */
@@ -229,7 +229,7 @@ function BillingToggle({ annual, onChange }) {
 
 /* ─── Plan Card ─────────────────────────────────────────────────────────── */
 
-function PlanCard({ plan, annual, onSelect, onViewDetail }) {
+function PlanCard({ plan, annual, onSelect, onViewDetail, isCurrent }) {
   const price = annual ? plan.price.annual : plan.price.monthly
   const { Icon } = plan
 
@@ -243,30 +243,46 @@ function PlanCard({ plan, annual, onSelect, onViewDetail }) {
         marginBottom: 12,
         position: 'relative',
         overflow: 'hidden',
-        border: plan.recommended
-          ? `1px solid ${plan.colorBorder}`
-          : '1px solid rgba(255,255,255,0.08)',
-        boxShadow: plan.recommended
-          ? `0 0 40px ${plan.colorGlow}, 0 4px 24px rgba(0,0,0,0.3)`
-          : '0 4px 24px rgba(0,0,0,0.2)',
+        border: isCurrent
+          ? '1px solid rgba(74,222,128,0.3)'
+          : plan.recommended
+            ? `1px solid ${plan.colorBorder}`
+            : '1px solid rgba(255,255,255,0.08)',
+        boxShadow: isCurrent
+          ? '0 0 40px rgba(74,222,128,0.06), 0 4px 24px rgba(0,0,0,0.3)'
+          : plan.recommended
+            ? `0 0 40px ${plan.colorGlow}, 0 4px 24px rgba(0,0,0,0.3)`
+            : '0 4px 24px rgba(0,0,0,0.2)',
       }}
     >
       {/* Background glow */}
       <div style={{
         position: 'absolute', top: -50, right: -50,
         width: 180, height: 180,
-        background: `radial-gradient(circle, ${plan.colorBg} 0%, transparent 70%)`,
+        background: `radial-gradient(circle, ${isCurrent ? 'rgba(74,222,128,0.07)' : plan.colorBg} 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
 
-      {/* Recommended badge */}
-      {plan.recommended && (
+      {/* Current / Recommended badge */}
+      {isCurrent ? (
+        <div style={{
+          position: 'absolute', top: 14, right: 14,
+          background: 'rgba(74,222,128,0.12)',
+          border: '1px solid rgba(74,222,128,0.28)',
+          borderRadius: 99, padding: '3px 10px',
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}>
+          <Check size={9} color="#4ade80" />
+          <span style={{ color: '#4ade80', fontSize: 10.5, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>
+            Current Plan
+          </span>
+        </div>
+      ) : plan.recommended && (
         <div style={{
           position: 'absolute', top: 14, right: 14,
           background: plan.colorBg,
           border: `1px solid ${plan.colorBorder}`,
-          borderRadius: 99,
-          padding: '3px 10px',
+          borderRadius: 99, padding: '3px 10px',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           <Star size={9} fill={plan.color} color={plan.color} />
@@ -280,12 +296,11 @@ function PlanCard({ plan, annual, onSelect, onViewDetail }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
         <div style={{
           width: 40, height: 40, borderRadius: 12,
-          background: plan.colorBg,
-          border: `1px solid ${plan.colorBorder}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
+          background: isCurrent ? 'rgba(74,222,128,0.1)' : plan.colorBg,
+          border: `1px solid ${isCurrent ? 'rgba(74,222,128,0.25)' : plan.colorBorder}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <Icon size={18} color={plan.color} />
+          <Icon size={18} color={isCurrent ? '#4ade80' : plan.color} />
         </div>
         <div>
           <div style={{ color: '#fff', fontSize: 17, fontWeight: 800, fontFamily: 'Inter, sans-serif', letterSpacing: '-0.3px' }}>
@@ -340,11 +355,11 @@ function PlanCard({ plan, annual, onSelect, onViewDetail }) {
           <div key={h} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
             <div style={{
               width: 18, height: 18, borderRadius: 99,
-              background: plan.colorBg,
-              border: `1px solid ${plan.colorBorder}`,
+              background: isCurrent ? 'rgba(74,222,128,0.1)' : plan.colorBg,
+              border: `1px solid ${isCurrent ? 'rgba(74,222,128,0.22)' : plan.colorBorder}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <Check size={10} color={plan.color} />
+              <Check size={10} color={isCurrent ? '#4ade80' : plan.color} />
             </div>
             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12.5, fontFamily: 'Inter, sans-serif' }}>{h}</span>
           </div>
@@ -368,20 +383,24 @@ function PlanCard({ plan, annual, onSelect, onViewDetail }) {
           Details <ChevronRight size={13} />
         </button>
         <button
-          onClick={onSelect}
+          onClick={!isCurrent ? onSelect : undefined}
+          disabled={isCurrent}
           style={{
             flex: 2, height: 40, borderRadius: 12,
-            background: plan.recommended
-              ? `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}cc 100%)`
-              : plan.colorBg,
-            border: `1px solid ${plan.colorBorder}`,
-            color: plan.recommended ? '#000' : plan.color,
-            fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            background: isCurrent
+              ? 'rgba(74,222,128,0.08)'
+              : plan.recommended
+                ? `linear-gradient(135deg, ${plan.color} 0%, ${plan.color}cc 100%)`
+                : plan.colorBg,
+            border: `1px solid ${isCurrent ? 'rgba(74,222,128,0.2)' : plan.colorBorder}`,
+            color: isCurrent ? '#4ade80' : plan.recommended ? '#000' : plan.color,
+            fontSize: 13, fontWeight: 700,
+            cursor: isCurrent ? 'default' : 'pointer',
             fontFamily: 'Inter, sans-serif',
-            boxShadow: plan.recommended ? `0 4px 16px ${plan.colorGlow}` : 'none',
+            boxShadow: !isCurrent && plan.recommended ? `0 4px 16px ${plan.colorGlow}` : 'none',
           }}
         >
-          Choose {plan.name}
+          {isCurrent ? 'Current Plan' : `Choose ${plan.name}`}
         </button>
       </div>
     </motion.div>
@@ -415,7 +434,6 @@ function CategorySection({ categoryKey, features, planColor, initialDelay }) {
       transition={{ delay: initialDelay }}
       style={{ marginBottom: 20 }}
     >
-      {/* Category header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <meta.Icon size={13} color={planColor} />
         <span style={{
@@ -442,9 +460,15 @@ function CategorySection({ categoryKey, features, planColor, initialDelay }) {
   )
 }
 
-function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
+function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack, context, isCurrent }) {
   const price = annual ? plan.price.annual : plan.price.monthly
   const { Icon } = plan
+
+  const ctaLabel = isCurrent
+    ? 'Current Plan'
+    : context === 'settings'
+      ? `Switch to ${plan.name}`
+      : `Start ${plan.name} — $${price % 1 === 0 ? price : price.toFixed(2)}/mo`
 
   return (
     <div style={{ ...screenBase, paddingTop: 44 }}>
@@ -474,7 +498,17 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             {plan.vehicles} · {plan.drivers}
           </div>
         </div>
-        {plan.recommended && (
+        {isCurrent ? (
+          <div style={{
+            background: 'rgba(74,222,128,0.12)',
+            border: '1px solid rgba(74,222,128,0.28)',
+            borderRadius: 99, padding: '3px 10px',
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <Check size={9} color="#4ade80" />
+            <span style={{ color: '#4ade80', fontSize: 10, fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>Current</span>
+          </div>
+        ) : plan.recommended && (
           <div style={{
             background: plan.colorBg,
             border: `1px solid ${plan.colorBorder}`,
@@ -499,28 +533,28 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             marginBottom: 20,
             position: 'relative',
             overflow: 'hidden',
-            border: `1px solid ${plan.colorBorder}`,
-            boxShadow: `0 0 40px ${plan.colorGlow}`,
+            border: isCurrent ? '1px solid rgba(74,222,128,0.28)' : `1px solid ${plan.colorBorder}`,
+            boxShadow: isCurrent ? '0 0 40px rgba(74,222,128,0.06)' : `0 0 40px ${plan.colorGlow}`,
           }}
         >
           <div style={{
             position: 'absolute', top: -60, right: -60,
             width: 200, height: 200,
-            background: `radial-gradient(circle, ${plan.colorBg} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${isCurrent ? 'rgba(74,222,128,0.07)' : plan.colorBg} 0%, transparent 70%)`,
             pointerEvents: 'none',
           }} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <div style={{
               width: 48, height: 48, borderRadius: 14,
-              background: plan.colorBg,
-              border: `1px solid ${plan.colorBorder}`,
+              background: isCurrent ? 'rgba(74,222,128,0.1)' : plan.colorBg,
+              border: `1px solid ${isCurrent ? 'rgba(74,222,128,0.25)' : plan.colorBorder}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Icon size={22} color={plan.color} />
+              <Icon size={22} color={isCurrent ? '#4ade80' : plan.color} />
             </div>
             <div>
-              <div style={{ color: plan.color, fontSize: 13, fontWeight: 700, fontFamily: 'Inter, sans-serif', marginBottom: 2 }}>
+              <div style={{ color: isCurrent ? '#4ade80' : plan.color, fontSize: 13, fontWeight: 700, fontFamily: 'Inter, sans-serif', marginBottom: 2 }}>
                 Tracklynk {plan.name}
               </div>
               <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
@@ -529,7 +563,6 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             </div>
           </div>
 
-          {/* Billing toggle */}
           <BillingToggle annual={annual} onChange={onToggleBilling} />
 
           <div style={{ marginTop: 16, display: 'flex', alignItems: 'flex-end', gap: 4 }}>
@@ -572,7 +605,7 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
           style={{ marginBottom: 20 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Star size={13} color={plan.color} />
+            <Star size={13} color={isCurrent ? '#4ade80' : plan.color} />
             <span style={{
               color: 'rgba(255,255,255,0.38)', fontSize: 10, fontWeight: 700,
               letterSpacing: '0.8px', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
@@ -581,7 +614,7 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {plan.forProfiles.map((profile, i) => (
+            {plan.forProfiles.map(profile => (
               <div
                 key={profile}
                 style={{
@@ -594,7 +627,7 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
               >
                 <div style={{
                   width: 6, height: 6, borderRadius: 99,
-                  background: plan.color, flexShrink: 0,
+                  background: isCurrent ? '#4ade80' : plan.color, flexShrink: 0,
                 }} />
                 <span style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, fontFamily: 'Inter, sans-serif' }}>
                   {profile}
@@ -613,7 +646,7 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '11px 14px', marginBottom: 20,
-              background: `${plan.colorBg}`,
+              background: plan.colorBg,
               border: `1px solid ${plan.colorBorder}`,
               borderRadius: 12,
             }}
@@ -631,18 +664,16 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
             key={key}
             categoryKey={key}
             features={features}
-            planColor={plan.color}
+            planColor={isCurrent ? '#4ade80' : plan.color}
             initialDelay={0.2 + i * 0.06}
           />
         ))}
 
-        {/* Fine print */}
         <p style={{
           color: 'rgba(255,255,255,0.2)',
           fontSize: 11, textAlign: 'center',
           lineHeight: 1.7, marginBottom: 8,
-          fontFamily: 'Inter, sans-serif',
-          padding: '0 8px',
+          fontFamily: 'Inter, sans-serif', padding: '0 8px',
         }}>
           No contract required. Cancel or change plan any time from Settings.
           Prices in USD, exclusive of applicable taxes.
@@ -656,8 +687,9 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
         style={{ padding: '14px 20px 48px' }}
       >
         <PrimaryButton
-          onClick={onSelect}
-          label={`Start ${plan.name} — $${price % 1 === 0 ? price : price.toFixed(2)}/mo`}
+          onClick={!isCurrent ? onSelect : undefined}
+          disabled={isCurrent}
+          label={ctaLabel}
         />
       </motion.div>
     </div>
@@ -666,13 +698,44 @@ function PlanDetailView({ plan, annual, onToggleBilling, onSelect, onBack }) {
 
 /* ─── Main Export ───────────────────────────────────────────────────────── */
 
-export default function PricingOverview({ next, back, step, total }) {
+export default function PricingOverview({
+  next, back, step, total,
+  context = 'onboarding',
+  currentPlanId = null,
+  onSelectPlan,
+}) {
   const [annual, setAnnual] = useState(false)
   const [detailPlan, setDetailPlan] = useState(null)
 
   const handleSelect = (plan) => {
-    next()
+    if (onSelectPlan) onSelectPlan(plan)
+    else if (next) next()
   }
+
+  // Simple settings-style header used when not in onboarding flow
+  const SettingsHeader = ({ title }) => (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '12px 20px',
+      borderBottom: '1px solid rgba(255,255,255,0.06)',
+    }}>
+      <button
+        onClick={back}
+        style={{
+          width: 36, height: 36, borderRadius: 10,
+          background: 'rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', color: '#fff', flexShrink: 0,
+        }}
+      >
+        <ChevronLeft size={18} />
+      </button>
+      <span style={{ color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'Inter, sans-serif', letterSpacing: '-0.3px' }}>
+        {title}
+      </span>
+    </div>
+  )
 
   return (
     <AnimatePresence mode="popLayout">
@@ -691,6 +754,8 @@ export default function PricingOverview({ next, back, step, total }) {
             onToggleBilling={setAnnual}
             onSelect={() => handleSelect(detailPlan)}
             onBack={() => setDetailPlan(null)}
+            context={context}
+            isCurrent={detailPlan.id === currentPlanId}
           />
         </motion.div>
       ) : (
@@ -703,7 +768,11 @@ export default function PricingOverview({ next, back, step, total }) {
           style={{ position: 'absolute', inset: 0 }}
         >
           <div style={{ ...screenBase }}>
-            <ProgressBar current={step} total={total} onBack={back} title="Choose Your Plan" />
+            {context === 'settings' ? (
+              <SettingsHeader title="Change Plan" />
+            ) : (
+              <ProgressBar current={step} total={total} onBack={back} title="Choose Your Plan" />
+            )}
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 0' }}>
               <motion.div
@@ -717,10 +786,12 @@ export default function PricingOverview({ next, back, step, total }) {
                   marginBottom: 4, letterSpacing: '-0.5px',
                   fontFamily: 'Inter, sans-serif',
                 }}>
-                  Simple, transparent pricing
+                  {context === 'settings' ? 'Upgrade or change plan' : 'Simple, transparent pricing'}
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 13, fontFamily: 'Inter, sans-serif' }}>
-                  No hidden fees. Upgrade or cancel any time.
+                  {context === 'settings'
+                    ? 'Changes take effect immediately. Unused credit is prorated.'
+                    : 'No hidden fees. Upgrade or cancel any time.'}
                 </p>
               </motion.div>
 
@@ -743,6 +814,7 @@ export default function PricingOverview({ next, back, step, total }) {
                   <PlanCard
                     plan={plan}
                     annual={annual}
+                    isCurrent={plan.id === currentPlanId}
                     onSelect={() => handleSelect(plan)}
                     onViewDetail={() => setDetailPlan(plan)}
                   />
@@ -755,7 +827,9 @@ export default function PricingOverview({ next, back, step, total }) {
                 lineHeight: 1.7, paddingBottom: 16,
                 fontFamily: 'Inter, sans-serif',
               }}>
-                Your card won't be charged until setup is complete.
+                {context === 'settings'
+                  ? 'Prorated credits applied automatically on tier changes.'
+                  : "Your card won't be charged until setup is complete."}
               </p>
             </div>
           </div>

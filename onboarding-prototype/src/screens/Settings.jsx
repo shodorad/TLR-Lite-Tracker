@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import PricingOverview from './PricingOverview.jsx'
 import {
   ChevronRight, Car, CreditCard, Zap, MapPin, Route,
+  Users, Truck, Building2,
   Activity, Lock, Fingerprint, LifeBuoy, FileText,
   Plus, XCircle, Trash2, ArrowLeftRight, ArrowLeft,
   Camera, Check, Wifi, WifiOff, RotateCcw, ScanLine,
@@ -895,6 +897,11 @@ const PLAN_DATA = {
   annual:  { id: 'annual',  label: 'Annual',  monthly: '7.99',  yearly: '$95.88', billedLabel: 'Billed $95.88/year', savings: 'Save $21/year',   commitment: 'Billed once a year'   },
   monthly: { id: 'monthly', label: 'Monthly', monthly: '9.65',  yearly: null,     billedLabel: 'Billed monthly',     savings: 'No commitment',    commitment: 'Billed every month'   },
 }
+const TIER_DISPLAY = {
+  personal: { name: 'Personal', Icon: Users,     color: '#60a5fa', colorBg: 'rgba(96,165,250,0.12)',  colorBorder: 'rgba(96,165,250,0.26)'  },
+  fleet:    { name: 'Fleet',    Icon: Truck,     color: '#C8FF00', colorBg: 'rgba(200,255,0,0.12)',   colorBorder: 'rgba(200,255,0,0.28)'   },
+  business: { name: 'Business', Icon: Building2, color: '#a78bfa', colorBg: 'rgba(167,139,250,0.12)', colorBorder: 'rgba(167,139,250,0.28)' },
+}
 const FEATURES = [
   { Icon: MapPin,   text: 'Real-time GPS tracking'   },
   { Icon: Zap,      text: 'Speed & trip alerts'      },
@@ -911,8 +918,9 @@ const subVariants = {
 /* ─────────────────────────────────────────
    Subscription — Plan overview (main)
 ───────────────────────────────────────── */
-function SubscriptionMain({ subscription, onSwitch, onCancel, onPayment, onBack }) {
+function SubscriptionMain({ subscription, onSwitch, onCancel, onPayment, onUpgrade, onBack }) {
   const plan      = PLAN_DATA[subscription.plan]
+  const tier      = TIER_DISPLAY[subscription.tier] || TIER_DISPLAY.personal
   const active    = subscription.status === 'active'
   const paused    = subscription.status === 'paused'
   const cancelled = subscription.status === 'cancelled'
@@ -937,18 +945,28 @@ function SubscriptionMain({ subscription, onSwitch, onCancel, onPayment, onBack 
           }}
         >
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-            {/* Plan badge */}
+            {/* Tier badge */}
             <div style={{
-              background: cancelled ? 'rgba(232,101,106,0.15)' : 'rgba(200,255,0,0.15)',
-              border: `1px solid ${cancelled ? 'rgba(232,101,106,0.3)' : 'rgba(200,255,0,0.3)'}`,
-              borderRadius: 8, padding: '4px 10px',
+              background: cancelled ? 'rgba(232,101,106,0.15)' : tier.colorBg,
+              border: `1px solid ${cancelled ? 'rgba(232,101,106,0.3)' : tier.colorBorder}`,
+              borderRadius: 10, padding: '5px 12px',
+              display: 'flex', alignItems: 'center', gap: 6,
             }}>
+              {!cancelled && <tier.Icon size={12} color={tier.color} />}
               <span style={{
-                color: cancelled ? '#E8656A' : '#C8FF00', fontSize: 11, fontWeight: 800,
-                letterSpacing: '0.8px', textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
+                color: cancelled ? '#E8656A' : tier.color, fontSize: 12, fontWeight: 800,
+                letterSpacing: '0.4px', fontFamily: 'Inter, sans-serif',
               }}>
-                {plan.label}
+                {cancelled ? 'Cancelled' : tier.name}
               </span>
+              {!cancelled && (
+                <span style={{
+                  color: 'rgba(255,255,255,0.3)', fontSize: 11,
+                  fontFamily: 'Inter, sans-serif', fontWeight: 500,
+                }}>
+                  · {plan.label}
+                </span>
+              )}
             </div>
             {/* Status */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1071,6 +1089,25 @@ function SubscriptionMain({ subscription, onSwitch, onCancel, onPayment, onBack 
             </motion.button>
           ) : (
             <>
+              {/* Change tier */}
+              <motion.button
+                whileTap={{ scale: 0.97 }} onClick={onUpgrade}
+                style={{
+                  width: '100%', height: 54, borderRadius: 18,
+                  background: `linear-gradient(135deg, ${tier.colorBg}, rgba(255,255,255,0.04))`,
+                  border: `1px solid ${tier.colorBorder}`,
+                  color: tier.color, fontSize: 15, fontWeight: 700,
+                  fontFamily: 'Inter, sans-serif', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  boxShadow: `0 4px 20px ${tier.colorBg}`,
+                }}
+              >
+                <tier.Icon size={16} />
+                Change Plan
+                <ChevronRight size={15} style={{ marginLeft: 2 }} />
+              </motion.button>
+
+              {/* Switch billing cadence */}
               <motion.button
                 whileTap={{ scale: 0.97 }} onClick={onSwitch}
                 style={{
@@ -1704,7 +1741,23 @@ function SubscriptionView({ subscription, onUpdate, onBack, initialView = 'main'
               onSwitch={() => go('switch')}
               onCancel={() => go('cancel')}
               onPayment={() => go('payment')}
+              onUpgrade={() => go('upgrade')}
               onBack={onBack}
+            />
+          </motion.div>
+        )}
+        {view === 'upgrade' && (
+          <motion.div key="sub-upgrade" custom={dir} variants={subVariants} initial="enter" animate="center" exit="exit" transition={slideTransition}
+            style={{ position: 'absolute', inset: 0 }}
+          >
+            <PricingOverview
+              context="settings"
+              currentPlanId={subscription.tier || 'personal'}
+              back={back}
+              onSelectPlan={plan => {
+                onUpdate({ ...subscription, tier: plan.id })
+                back()
+              }}
             />
           </motion.div>
         )}
@@ -3047,7 +3100,7 @@ export default function Settings() {
     { id: 1, nickname: 'My Tesla Model 3', plate: '8ABC123', year: '2021', make: 'Tesla', model: 'Model 3', trim: 'Long Range', device: { connected: true, lastSeen: '2 min ago', signal: 4 } },
   ])
   const [subscription, setSubscription] = useState({
-    plan: 'annual', status: 'active',
+    plan: 'annual', status: 'active', tier: 'personal',
     nextDate: 'Jan 15, 2026', nextAmount: '$95.88',
     payment: { type: 'visa', last4: '4242' },
   })
