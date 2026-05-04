@@ -12,6 +12,7 @@ import PricingOverview from './screens/PricingOverview.jsx'
 import Home from './screens/Home.jsx'
 import Trips from './screens/Trips.jsx'
 import Settings from './screens/Settings.jsx'
+import HealthScore from './screens/HealthScore.jsx'
 import BottomTabs from './components/BottomTabs.jsx'
 
 const SCREENS = ['welcome', 'auth', 'signup', 'pricing', 'scan', 'vehicle', 'details', 'deviceSetup', 'success']
@@ -119,7 +120,7 @@ export default function App() {
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
               style={{ position: 'absolute', inset: 0 }}
             >
-              {mainScreen === 'home' ? <Home /> : mainScreen === 'trips' ? <Trips /> : <Settings />}
+              {mainScreen === 'home' ? <Home /> : mainScreen === 'trips' ? <Trips /> : mainScreen === 'health' ? <HealthScore /> : <Settings />}
               <BottomTabs current={mainScreen} onNavigate={setMainScreen} />
             </motion.div>
           ) : (

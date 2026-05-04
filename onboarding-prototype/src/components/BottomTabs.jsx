@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion'
-import { MapPin, Route, User, Settings } from 'lucide-react'
+import { MapPin, Route, HeartPulse, Settings } from 'lucide-react'
 
 const TABS = [
-  { id: 'home',     label: 'Home',     Icon: MapPin   },
-  { id: 'trips',    label: 'Trips',    Icon: Route    },
-  { id: 'profile',  label: 'Profile',  Icon: User,    disabled: true },
-  { id: 'settings', label: 'Settings', Icon: Settings },
+  { id: 'home',     label: 'Home',     Icon: MapPin      },
+  { id: 'trips',    label: 'Trips',    Icon: Route       },
+  { id: 'health',   label: 'Health',   Icon: HeartPulse  },
+  { id: 'settings', label: 'Settings', Icon: Settings    },
 ]
 
 export default function BottomTabs({ current, onNavigate }) {
