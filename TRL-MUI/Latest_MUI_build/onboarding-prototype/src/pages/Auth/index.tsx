@@ -281,9 +281,10 @@ interface AuthProps {
   next: () => void
   back: () => void
   onOAuthLogin?: () => void
+  onSignIn?: () => void
 }
 
-export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
+export default function Auth({ next, back, onOAuthLogin, onSignIn }: AuthProps) {
   return (
     <AuthRoot>
 
@@ -379,7 +380,7 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
             <SignInLink
               variant="text"
               whileTap={{ scale: 0.95 }}
-              onClick={next}
+              onClick={onSignIn ?? next}
             >
               Sign in
             </SignInLink>
@@ -404,7 +405,7 @@ export default function Auth({ next, back, onOAuthLogin }: AuthProps) {
                 Instant access to your account
               </BiometricCaption>
             </Box>
-            <FaceIDButton onClick={next} />
+            <FaceIDButton onClick={onOAuthLogin ?? next} />
           </BiometricRow>
         </BiometricCard>
 

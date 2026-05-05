@@ -527,9 +527,10 @@ interface WelcomeProps {
   next: () => void
   goTo: (i: number) => void
   onEnterApp: () => void
+  onSignIn?: () => void
 }
 
-export default function Welcome({ next, goTo, onEnterApp }: WelcomeProps) {
+export default function Welcome({ next, goTo, onEnterApp, onSignIn }: WelcomeProps) {
   const [slide, setSlide] = useState(0)
   const [dir, setDir]     = useState(1)
   const timerRef          = useRef(null)
@@ -634,7 +635,7 @@ export default function Welcome({ next, goTo, onEnterApp }: WelcomeProps) {
             whileTap={{ scale: 0.97 }}
             onClick={onEnterApp}
           >
-            Explore the app (skip onboarding) →
+            Test drive the app →
           </ExploreButton>
         </motion.div>
 
@@ -643,7 +644,7 @@ export default function Welcome({ next, goTo, onEnterApp }: WelcomeProps) {
             fullWidth
             variant="text"
             whileTap={{ scale: 0.97 }}
-            onClick={next}
+            onClick={onSignIn ?? next}
           >
             Already have an account?{' '}
             <SignInHighlight component="span">Sign In</SignInHighlight>

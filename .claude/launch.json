@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tracklynk-auth",
+      "runtimeExecutable": "node_modules/.bin/vite",
+      "runtimeArgs": ["--port", "5175"],
+      "port": 5175,
+      "cwd": "TRL-MUI/Latest_MUI_build/onboarding-prototype"
+    }
+  ]
+}

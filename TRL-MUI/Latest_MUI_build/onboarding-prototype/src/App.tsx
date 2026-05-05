@@ -65,26 +65,66 @@ const slideVariants = {
 
 const transition = { type: 'spring', stiffness: 380, damping: 38, mass: 0.8 }
 
+// ─── Named indices (avoids magic numbers throughout) ──
+
+const idx = (name: OnboardingScreen) => ONBOARDING_SCREENS.indexOf(name)
+
 // ─── App ──────────────────────────────────────────────
 
 export default function App() {
-  const [step, setStep]             = useState(0)
+  // History stack — back() pops, all forward navigation pushes.
+  // This ensures back always returns to the exact screen the user came from,
+  // regardless of how they got to the current screen (sequential or goTo jump).
+  const [history, setHistory]       = useState<number[]>([0])
   const [dir, setDir]               = useState(1)
   const [appPhase, setAppPhase]     = useState<'onboarding' | 'main'>('onboarding')
   const [mainScreen, setMainScreen] = useState<MainScreen>('home')
   const [panelOpen, setPanelOpen]   = useState(false)
 
-  const next       = () => { setDir(1);  setStep(s => Math.min(s + 1, ONBOARDING_SCREENS.length - 1)) }
-  const back       = () => { setDir(-1); setStep(s => Math.max(s - 1, 0)) }
-  const goTo       = (i: number) => { setDir(i > step ? 1 : -1); setStep(i) }
-  const enterApp   = () => setAppPhase('main')
-  const skipToScan = () => { setDir(1); setStep(ONBOARDING_SCREENS.indexOf('scan')) }
+  const step = history[history.length - 1]
 
-  const screen          = ONBOARDING_SCREENS[step] as OnboardingScreen
-  const onboardingStep  = step - 2
-  const totalOnboarding = 6
+  const push = (i: number) => {
+    setDir(i >= step ? 1 : -1)
+    setHistory(h => [...h, i])
+  }
+  const back = () => {
+    if (history.length <= 1) return
+    const prev = history[history.length - 2]
+    setDir(prev < step ? -1 : 1)
+    setHistory(h => h.slice(0, -1))
+  }
+  const next = () => push(Math.min(step + 1, ONBOARDING_SCREENS.length - 1))
+  const goTo = (i: number) => push(i)
 
-  const screenProps = { next, back, goTo, step: onboardingStep, total: totalOnboarding, onEnterApp: enterApp, onOAuthLogin: skipToScan }
+  // Named navigation callbacks used by each screen
+  const goToScan          = () => push(idx('scan'))
+  const goToLogin         = () => push(idx('login'))
+  const goToSignupEmail   = () => push(idx('auth'))
+  const goToForgotPass    = () => push(idx('forgotPassword'))
+  const goToVerifyEmail   = () => push(idx('verifyEmail'))
+
+  const enterApp = () => setAppPhase('main')
+
+  const screen = ONBOARDING_SCREENS[step] as OnboardingScreen
+
+  // ProgressBar step/total covers signup → choosePlan (6 onboarding steps)
+  const signupIdx       = idx('signup')
+  const onboardingStep  = step - signupIdx
+  const totalOnboarding = idx('choosePlan') - signupIdx + 1
+
+  const screenProps = {
+    next,
+    back,
+    goTo,
+    step: onboardingStep,
+    total: totalOnboarding,
+    onEnterApp:      enterApp,
+    onOAuthLogin:    goToScan,
+    onSignIn:        goToLogin,
+    onSignUpEmail:   goToSignupEmail,
+    onForgotPassword: goToForgotPass,
+    onVerifyEmail:   goToVerifyEmail,
+  }
 
   const isMainApp = appPhase === 'main'
 
