@@ -47,7 +47,7 @@ const SUBTASK_FIELDS = [
 ]
 
 // Flow-level (parent) issues — fetched for their due dates
-const FLOW_FIELDS = ['summary', 'duedate', 'customfield_10015', 'status', 'components']
+const FLOW_FIELDS = ['summary', 'duedate', 'customfield_10015', 'status', 'components', 'parent']
 
 export async function fetchDashboardData(startDate) {
   const afterClause = startDate

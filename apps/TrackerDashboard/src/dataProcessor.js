@@ -44,7 +44,16 @@ export const PCT_HEX = {
   neutral: '#CCCCCC',
 }
 
-export function processData(subtasks) {
+export function processData(subtasks, rawFlows = []) {
+  // Build flowKey → module name from the Jira hierarchy (flow's parent epic)
+  // This is authoritative — only flows whose parent epic is a known module get counted.
+  const flowModuleMap = {}
+  for (const flow of rawFlows) {
+    const parentSummary = flow.fields?.parent?.fields?.summary ?? ''
+    if (MODULE_ORDER.includes(parentSummary)) {
+      flowModuleMap[flow.key] = parentSummary
+    }
+  }
   // Module buckets
   const modMap = {}
   MODULE_ORDER.forEach((name, i) => {
@@ -67,7 +76,8 @@ export function processData(subtasks) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
     const isDone = iss.fields.status?.statusCategory?.key === 'done'
     const statusName = iss.fields.status?.name ?? ''
-    const comp = iss.fields.components?.[0]?.name ?? ''
+    // Use parent-epic hierarchy first; fall back to component tag on the subtask
+    const comp = (pk && flowModuleMap[pk]) ?? iss.fields.components?.[0]?.name ?? ''
     const pk = iss.fields.parent?.key ?? ''
     const ps = iss.fields.parent?.fields?.summary ?? ''
 

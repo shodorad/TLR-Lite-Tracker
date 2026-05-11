@@ -48,7 +48,7 @@ export default function App() {
     setError(null)
     try {
       const raw = await fetchDashboardData(startDate)
-      const processed = processData(raw.subtasks)
+      const processed = processData(raw.subtasks, raw.rawFlows)
       setRawSubtasks(raw.subtasks)
       setRawFlows(raw.rawFlows)
       setData({ ...processed, doneWeek: raw.doneWeek })
