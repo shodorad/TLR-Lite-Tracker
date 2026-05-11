@@ -1,16 +1,16 @@
 import { Doughnut } from 'react-chartjs-2'
 import { pct, TOTAL_FLOWS } from '../dataProcessor.js'
 
-const TOTAL_TASKS = TOTAL_FLOWS * 3
-
 const DISC = [
   { key: 'ux',  label: 'UX',          doneKey: 'uxDone',  color: '#3D9E52', bg: 'rgba(61,158,82,0.11)',   fg: '#267339' },
   { key: 'be',  label: 'Backend',     doneKey: 'beDone',  color: '#2B6CB0', bg: 'rgba(43,108,176,0.11)',  fg: '#1A4F8A' },
   { key: 'int', label: 'Integration', doneKey: 'intDone', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
+  { key: 'fe',  label: 'Frontend',    doneKey: 'feDone',  color: '#7C3AED', bg: 'rgba(124,58,237,0.11)',  fg: '#5B21B6' },
 ]
 
 export default function OverallProgress({ stats }) {
-  const totalDone = stats.uxDone + stats.beDone + stats.intDone
+  const totalDone = DISC.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
+  const TOTAL_TASKS = TOTAL_FLOWS * DISC.length
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
 
