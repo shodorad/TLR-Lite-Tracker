@@ -65,12 +65,13 @@ export function processData(subtasks, rawFlows = []) {
       uxD: 0, uxT: 0,
       beD: 0, beT: 0,
       inD: 0, inT: 0,
+      feD: 0, feT: 0,
     }
   })
 
   // Flow map: Task key → { code, name, module, ux, backend, integration }
   const flowMap = {}
-  let uxDone = 0, beDone = 0, intDone = 0
+  let uxDone = 0, beDone = 0, intDone = 0, feDone = 0
 
   for (const iss of subtasks) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
@@ -92,17 +93,20 @@ export function processData(subtasks, rawFlows = []) {
         ux: null,        uxDone: false,
         backend: null,   beDone: false,
         integration: null, intDone: false,
+        frontend: null,  feDone: false,
       }
     }
     if (pk) {
       if (disc === 'UX') { flowMap[pk].ux = statusName; if (isDone) flowMap[pk].uxDone = true }
       else if (disc === 'Backend') { flowMap[pk].backend = statusName; if (isDone) flowMap[pk].beDone = true }
       else if (disc === 'Integration') { flowMap[pk].integration = statusName; if (isDone) flowMap[pk].intDone = true }
+      else if (disc === 'Frontend') { flowMap[pk].frontend = statusName; if (isDone) flowMap[pk].feDone = true }
     }
 
     if (disc === 'UX') { if (isDone) uxDone++ }
     else if (disc === 'Backend') { if (isDone) beDone++ }
     else if (disc === 'Integration') { if (isDone) intDone++ }
+    else if (disc === 'Frontend') { if (isDone) feDone++ }
 
     const m = modMap[comp]
     if (m) {
@@ -110,6 +114,7 @@ export function processData(subtasks, rawFlows = []) {
       if (disc === 'UX') { m.uxT++; if (isDone) m.uxD++ }
       else if (disc === 'Backend') { m.beT++; if (isDone) m.beD++ }
       else if (disc === 'Integration') { m.inT++; if (isDone) m.inD++ }
+      else if (disc === 'Frontend') { m.feT++; if (isDone) m.feD++ }
     }
   }
 
@@ -120,8 +125,9 @@ export function processData(subtasks, rawFlows = []) {
     const uxOk  = flow.ux          === null || flow.uxDone
     const beOk  = flow.backend     === null || flow.beDone
     const intOk = flow.integration === null || flow.intDone
-    const hasAny = flow.ux !== null || flow.backend !== null || flow.integration !== null
-    if (hasAny && uxOk && beOk && intOk) m.flowsDone++
+    const feOk  = flow.frontend    === null || flow.feDone
+    const hasAny = flow.ux !== null || flow.backend !== null || flow.integration !== null || flow.frontend !== null
+    if (hasAny && uxOk && beOk && intOk && feOk) m.flowsDone++
   }
 
   const flows = Object.values(flowMap).sort((a, b) => {
@@ -131,7 +137,7 @@ export function processData(subtasks, rawFlows = []) {
   })
 
   return {
-    stats: { uxDone, beDone, intDone },
+    stats: { uxDone, beDone, intDone, feDone },
     modules: MODULE_ORDER.map(n => modMap[n]).filter(Boolean),
     flows,
   }

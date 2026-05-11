@@ -5,6 +5,7 @@ const STREAMS = [
   { key: 'ux',          label: 'UX Design',   discField: 'UX',          flowKey: 'ux',          doneKey: 'uxDone',  fill: '#8b5cf6', dot: '#8b5cf6' },
   { key: 'backend',     label: 'Backend',      discField: 'Backend',     flowKey: 'backend',      doneKey: 'beDone',  fill: '#3b82f6', dot: '#3b82f6' },
   { key: 'integration', label: 'Integration',  discField: 'Integration', flowKey: 'integration',  doneKey: 'intDone', fill: '#10b981', dot: '#10b981' },
+  { key: 'frontend',    label: 'Frontend',     discField: 'Frontend',    flowKey: 'frontend',     doneKey: 'feDone',  fill: '#7c3aed', dot: '#7c3aed' },
 ]
 
 const CADENCES = [
@@ -352,10 +353,12 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
       }}>
         This week we completed UX for{' '}
         <strong style={{ color: '#267339' }}>{streams[0].done} flows</strong>,
-        {' '}backend tasks for{' '}
+        {' '}backend for{' '}
         <strong style={{ color: '#1A4F8A' }}>{streams[1].done} flows</strong>,
-        {' '}and integration for{' '}
-        <strong style={{ color: '#8C5E00' }}>{streams[2].done} flows</strong>.
+        {' '}integration for{' '}
+        <strong style={{ color: '#8C5E00' }}>{streams[2].done} flows</strong>,
+        {' '}and frontend for{' '}
+        <strong style={{ color: '#5B21B6' }}>{streams[3].done} flows</strong>.
       </div>
     </div>
   )

@@ -2,19 +2,21 @@ import { Bar } from 'react-chartjs-2'
 import { pct } from '../dataProcessor.js'
 
 const DISC_COLORS = {
-  ux:          { bg: 'rgba(61,158,82,.75)',   zero: 'rgba(61,158,82,.15)'  },
-  backend:     { bg: 'rgba(43,108,176,.75)',  zero: 'rgba(43,108,176,.15)' },
-  integration: { bg: 'rgba(212,146,10,.75)',  zero: 'rgba(212,146,10,.15)' },
+  ux:          { bg: 'rgba(61,158,82,.75)',    zero: 'rgba(61,158,82,.15)'   },
+  backend:     { bg: 'rgba(43,108,176,.75)',   zero: 'rgba(43,108,176,.15)'  },
+  integration: { bg: 'rgba(212,146,10,.75)',   zero: 'rgba(212,146,10,.15)'  },
+  frontend:    { bg: 'rgba(124,58,237,.75)',   zero: 'rgba(124,58,237,.15)'  },
 }
 
-// Per-discipline label colors (green / blue / amber)
-const LABEL_COLORS = ['#267339', '#1A4F8A', '#8C5E00']
+// Per-discipline label colors (green / blue / amber / purple)
+const LABEL_COLORS = ['#267339', '#1A4F8A', '#8C5E00', '#5B21B6']
 
 // Which module fields to read per dataset index
 const DISC_FIELDS = [
   { doneKey: 'uxD', totalKey: 'uxT' },
   { doneKey: 'beD', totalKey: 'beT' },
   { doneKey: 'inD', totalKey: 'inT' },
+  { doneKey: 'feD', totalKey: 'feT' },
 ]
 
 export default function ModuleHealthChart({ modules }) {
@@ -103,6 +105,12 @@ export default function ModuleHealthChart({ modules }) {
         backgroundColor: modules.map(m => pct(m.inD, m.inT) === 0 ? DISC_COLORS.integration.zero : DISC_COLORS.integration.bg),
         ...shared,
       },
+      {
+        label: 'Frontend',
+        data: modules.map(m => pct(m.feD, m.feT)),
+        backgroundColor: modules.map(m => pct(m.feD, m.feT) === 0 ? DISC_COLORS.frontend.zero : DISC_COLORS.frontend.bg),
+        ...shared,
+      },
     ],
   }
 
@@ -170,6 +178,7 @@ export default function ModuleHealthChart({ modules }) {
           <span className="badge badge-ux">UX</span>
           <span className="badge badge-be">Backend</span>
           <span className="badge badge-int">Integration</span>
+          <span className="badge" style={{ background: 'rgba(124,58,237,.12)', color: '#5B21B6' }}>Frontend</span>
         </div>
       </div>
       <div style={{ padding: '16px 20px 22px' }}>
