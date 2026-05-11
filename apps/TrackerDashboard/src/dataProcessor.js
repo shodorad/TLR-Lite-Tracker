@@ -76,10 +76,10 @@ export function processData(subtasks, rawFlows = []) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
     const isDone = iss.fields.status?.statusCategory?.key === 'done'
     const statusName = iss.fields.status?.name ?? ''
-    // Use parent-epic hierarchy first; fall back to component tag on the subtask
-    const comp = (pk && flowModuleMap[pk]) ?? iss.fields.components?.[0]?.name ?? ''
     const pk = iss.fields.parent?.key ?? ''
     const ps = iss.fields.parent?.fields?.summary ?? ''
+    // Use parent-epic hierarchy first; fall back to component tag on the subtask
+    const comp = (pk && flowModuleMap[pk]) ?? iss.fields.components?.[0]?.name ?? ''
 
     if (pk && !flowMap[pk]) {
       flowMap[pk] = {
