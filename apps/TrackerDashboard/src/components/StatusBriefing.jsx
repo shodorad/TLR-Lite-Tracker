@@ -33,13 +33,22 @@ function isThisWeek(dateStr) {
   return d >= mon && d <= fri
 }
 
-// Build a map of flow key → duedate from the raw Jira flow issues
+// Build a map of flow key → duedate.
+// Due dates may be set directly on flows OR on their parent module epic —
+// flows without a direct due date inherit from their parent.
 function buildFlowDateMap(rawFlows) {
-  const map = {}
+  const direct = {}
   for (const f of (rawFlows ?? [])) {
     const due   = f.fields?.duedate ?? null
-    const start = f.fields?.customfield_10015 ?? null  // start date (team-managed)
-    if (due || start) map[f.key] = { due, start }
+    const start = f.fields?.customfield_10015 ?? null
+    if (due || start) direct[f.key] = { due, start }
+  }
+  const map = { ...direct }
+  for (const f of (rawFlows ?? [])) {
+    if (!map[f.key]) {
+      const parentKey = f.fields?.parent?.key
+      if (parentKey && direct[parentKey]) map[f.key] = direct[parentKey]
+    }
   }
   return map
 }
