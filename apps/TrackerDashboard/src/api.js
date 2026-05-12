@@ -43,7 +43,7 @@ function formatJiraDate(date) {
 
 const SUBTASK_FIELDS = [
   'summary', 'status', 'components', 'parent',
-  'assignee', 'statuscategorychangedate', 'resolutiondate',
+  'assignee', 'statuscategorychangedate', 'resolutiondate', 'duedate',
 ]
 
 // Flow-level (parent) issues — fetched for their due dates

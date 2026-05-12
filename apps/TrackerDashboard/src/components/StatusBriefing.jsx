@@ -33,14 +33,22 @@ function isThisWeek(dateStr) {
   return d >= mon && d <= fri
 }
 
-// Build a map of flow key → duedate from the raw Jira flow issues.
-// Only flows with a due date set directly on them are included.
-function buildFlowDateMap(rawFlows) {
+// Build a map of flow key → duedate.
+// Checks due dates on the flow issue itself first, then falls back to
+// due dates set on any of the flow's subtasks.
+function buildFlowDateMap(rawFlows, subtasks) {
   const map = {}
   for (const f of (rawFlows ?? [])) {
     const due   = f.fields?.duedate ?? null
     const start = f.fields?.customfield_10015 ?? null
     if (due || start) map[f.key] = { due, start }
+  }
+  // If a subtask has a due date, bubble it up to the parent flow
+  for (const s of (subtasks ?? [])) {
+    const due = s.fields?.duedate ?? null
+    if (!due) continue
+    const pk = s.fields?.parent?.key
+    if (pk && !map[pk]) map[pk] = { due, start: null }
   }
   return map
 }
@@ -286,7 +294,7 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
   if (!stats || !modules) return null
 
   const streams       = buildStreams(stats, subtasks)
-  const flowDateMap   = buildFlowDateMap(rawFlows)
+  const flowDateMap   = buildFlowDateMap(rawFlows, subtasks)
   const targetedFlows = getTargetedFlows(flows, flowDateMap)
   const cadenceLabel  = CADENCES.find(c => c.key === cadence)?.label ?? ''
 
