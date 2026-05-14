@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { fetchDashboardData } from './api.js'
 import { processData } from './dataProcessor.js'
-import { autoDetectMode, getDateRange, DATE_MODES } from './utils/dateUtils.js'
+import { autoDetectMode, getDateRange } from './utils/dateUtils.js'
 import Header from './components/Header.jsx'
 import StatCards from './components/StatCards.jsx'
 import DoneThisWeek from './components/DoneThisWeek.jsx'
@@ -9,7 +9,7 @@ import ModuleRollup from './components/ModuleRollup.jsx'
 import FlowDetail from './components/FlowDetail.jsx'
 import ModuleHealthChart from './components/ModuleHealthChart.jsx'
 import OverallProgress from './components/OverallProgress.jsx'
-import DateModeSelector from './components/DateModeSelector.jsx'
+import DemoReadiness from './components/DemoReadiness.jsx'
 import StatusBriefing, { StatusBriefingModules } from './components/StatusBriefing.jsx'
 
 export default function App() {
@@ -20,10 +20,7 @@ export default function App() {
   const [error, setError] = useState(null)
   const [lastRefreshed, setLastRefreshed] = useState(null)
 
-  // Date mode state
-  const [dateMode, setDateMode] = useState(autoDetectMode)
-  const [customStart, setCustomStart] = useState('')
-  const [customEnd, setCustomEnd] = useState('')
+  const [dateMode] = useState(autoDetectMode)
 
   // Collapse states (all expanded by default)
   const [flowBreakdownCollapsed, setFlowBreakdownCollapsed] = useState(
@@ -36,22 +33,17 @@ export default function App() {
     () => localStorage.getItem('doneThisWeekCollapsed') === 'true'
   )
 
-  function handleCustomChange(field, value) {
-    if (field === 'start') setCustomStart(value)
-    else setCustomEnd(value)
-  }
-
-  const dateRange = getDateRange(dateMode, customStart, customEnd)
+  const dateRange = getDateRange(dateMode, '', '')
 
   const load = useCallback(async (startDate) => {
     setLoading(true)
     setError(null)
     try {
       const raw = await fetchDashboardData(startDate)
-      const processed = processData(raw.subtasks, raw.rawFlows)
+      const processed = processData(raw.subtasks, raw.rawFlows, raw.doneWeek)
       setRawSubtasks(raw.subtasks)
       setRawFlows(raw.rawFlows)
-      setData({ ...processed, doneWeek: raw.doneWeek })
+      setData(processed)
       setLastRefreshed(new Date())
     } catch (err) {
       if (err.message === 'Failed to fetch') {
@@ -129,9 +121,12 @@ export default function App() {
 
         {data && (
           <div className="dashboard-single">
-            {/* Hero row — 2 columns: completion left, cadence right */}
-            <div className="hero-row">
-              <OverallProgress stats={data.stats} />
+            {/* Hero row — 2 columns: stacked pair (overall + demo) · cadence */}
+            <div className="hero-three">
+              <div className="hero-stacked-pair">
+                <OverallProgress stats={data.stats} />
+                <DemoReadiness stats={data.stats} flows={data.flows} modules={data.modules} rawFlows={rawFlows} />
+              </div>
               <StatusBriefing
                 stats={data.stats}
                 modules={data.modules}
@@ -141,7 +136,7 @@ export default function App() {
                 rawFlows={rawFlows}
                 dateRange={dateRange}
               />
-            </div>
+            </div> {/* end .hero-three */}
 
             {/* Journey Health chart — full width, below summary */}
             <ModuleHealthChart modules={data.modules} />
@@ -159,9 +154,6 @@ export default function App() {
                   </svg>
                   Discipline Breakdown
                   <span className={`chevron ${moduleHealthCollapsed ? 'collapsed' : ''}`}>▼</span>
-                </span>
-                <span className="badge badge-blue" style={{ fontSize: 11 }}>
-                  {moduleHealthCollapsed ? 'Click to expand' : 'Click to collapse'}
                 </span>
               </div>
               {!moduleHealthCollapsed && (
@@ -184,9 +176,6 @@ export default function App() {
                   Flow Detail Breakdown
                   <span className={`chevron ${flowBreakdownCollapsed ? 'collapsed' : ''}`}>▼</span>
                 </span>
-                <span className="badge badge-blue" style={{ fontSize: 11 }}>
-                  {flowBreakdownCollapsed ? 'Click to expand' : 'Click to collapse'}
-                </span>
               </div>
               {!flowBreakdownCollapsed && (
                 <div className="flow-breakdown-content">
@@ -205,9 +194,6 @@ export default function App() {
                   </svg>
                   Done This Week
                   <span className={`chevron ${doneThisWeekCollapsed ? 'collapsed' : ''}`}>▼</span>
-                </span>
-                <span className="badge badge-blue" style={{ fontSize: 11 }}>
-                  {doneThisWeekCollapsed ? 'Click to expand' : 'Click to collapse'}
                 </span>
               </div>
               {!doneThisWeekCollapsed && <DoneThisWeek issues={data.doneWeek} />}

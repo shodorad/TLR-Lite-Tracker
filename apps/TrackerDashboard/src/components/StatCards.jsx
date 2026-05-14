@@ -1,19 +1,19 @@
 import { pct, colorForPct, PCT_HEX, TOTAL_FLOWS } from '../dataProcessor.js'
 
 const CARDS = [
-  { label: 'UX',          doneKey: 'uxDone',  impact: 'High impact',   impactCls: 'chip chip-high'   },
-  { label: 'Backend',     doneKey: 'beDone',  impact: 'High impact',   impactCls: 'chip chip-high'   },
-  { label: 'Integration', doneKey: 'intDone', impact: 'Medium impact', impactCls: 'chip chip-medium' },
+  { label: 'UX',          doneKey: 'uxDone'  },
+  { label: 'Frontend',    doneKey: 'feDone'  },
+  { label: 'Backend',     doneKey: 'beDone'  },
+  { label: 'Integration', doneKey: 'intDone' },
 ]
 
-function StatCard({ label, done, impact, impactCls }) {
+function StatCard({ label, done }) {
   const p   = pct(done, TOTAL_FLOWS)
   const col = colorForPct(p)
   const hex = PCT_HEX[col]
 
   return (
     <div className="stat-card" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-      {/* Big number — left anchor */}
       <div style={{ flexShrink: 0, minWidth: 72 }}>
         <div style={{
           fontSize: 44, fontWeight: 800, lineHeight: 1,
@@ -27,12 +27,8 @@ function StatCard({ label, done, impact, impactCls }) {
         </div>
       </div>
 
-      {/* Label + chip + bar — right */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <span className="stat-name" style={{ margin: 0 }}>{label}</span>
-          <span className={impactCls}>{impact}</span>
-        </div>
+        <span className="stat-name" style={{ margin: '0 0 8px', display: 'block' }}>{label}</span>
         <div className="stat-bar" style={{ margin: 0 }}>
           <div className="stat-bar-fill" style={{ width: `${p}%`, background: hex }} />
         </div>
@@ -45,7 +41,7 @@ export default function StatCards({ stats }) {
   return (
     <div className="stat-row">
       {CARDS.map(c => (
-        <StatCard key={c.label} label={c.label} done={stats[c.doneKey]} impact={c.impact} impactCls={c.impactCls} />
+        <StatCard key={c.label} label={c.label} done={stats[c.doneKey]} />
       ))}
     </div>
   )

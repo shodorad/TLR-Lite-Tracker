@@ -24,7 +24,7 @@ export const MODULE_COLORS = [
   '#3A9688',
 ]
 
-export const TOTAL_FLOWS = 65
+export const TOTAL_FLOWS = 51
 
 export function pct(done, total) {
   return total === 0 ? 0 : Math.round((done / total) * 100)
@@ -44,13 +44,16 @@ export const PCT_HEX = {
   neutral: '#CCCCCC',
 }
 
-export function processData(subtasks, rawFlows = []) {
+export function processData(subtasks, rawFlows = [], doneWeek = []) {
   // Build flowKey → module name from the Jira hierarchy (flow's parent epic)
-  // This is authoritative — only flows whose parent epic is a known module get counted.
+  // This is authoritative — only flows whose parent epic is a known Phase 1 module get counted.
   const flowModuleMap = {}
+  const phase2FlowKeys = new Set()
   for (const flow of rawFlows) {
     const parentSummary = flow.fields?.parent?.fields?.summary ?? ''
-    if (MODULE_ORDER.includes(parentSummary)) {
+    if (/phase\s*2/i.test(parentSummary)) {
+      phase2FlowKeys.add(flow.key)
+    } else if (MODULE_ORDER.includes(parentSummary)) {
       flowModuleMap[flow.key] = parentSummary
     }
   }
@@ -83,6 +86,9 @@ export function processData(subtasks, rawFlows = []) {
     const comp = rawFlows.length > 0
       ? (flowModuleMap[pk] ?? '')
       : (iss.fields.components?.[0]?.name ?? '')
+
+    // Exclude Phase 2 subtasks
+    if (phase2FlowKeys.has(pk)) continue
 
     if (pk && !flowMap[pk]) {
       flowMap[pk] = {
@@ -136,9 +142,16 @@ export function processData(subtasks, rawFlows = []) {
     return na - nb
   })
 
+  // Exclude Phase 2 from doneWeek
+  const filteredDoneWeek = doneWeek.filter(s => {
+    const pk = s.fields?.parent?.key ?? ''
+    return !phase2FlowKeys.has(pk)
+  })
+
   return {
     stats: { uxDone, beDone, intDone, feDone },
     modules: MODULE_ORDER.map(n => modMap[n]).filter(Boolean),
     flows,
+    doneWeek: filteredDoneWeek,
   }
 }

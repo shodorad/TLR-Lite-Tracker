@@ -8,15 +8,15 @@ const DISC_COLORS = {
   frontend:    { bg: 'rgba(124,58,237,.75)',   zero: 'rgba(124,58,237,.15)'  },
 }
 
-// Per-discipline label colors (green / blue / amber / purple)
-const LABEL_COLORS = ['#267339', '#1A4F8A', '#8C5E00', '#5B21B6']
+// Per-discipline label colors (green / purple / blue / amber)
+const LABEL_COLORS = ['#267339', '#5B21B6', '#1A4F8A', '#8C5E00']
 
 // Which module fields to read per dataset index
 const DISC_FIELDS = [
   { doneKey: 'uxD', totalKey: 'uxT' },
+  { doneKey: 'feD', totalKey: 'feT' },
   { doneKey: 'beD', totalKey: 'beT' },
   { doneKey: 'inD', totalKey: 'inT' },
-  { doneKey: 'feD', totalKey: 'feT' },
 ]
 
 export default function ModuleHealthChart({ modules }) {
@@ -45,30 +45,65 @@ export default function ModuleHealthChart({ modules }) {
     },
   }
 
-  // Plugin B: per-bar "X of Y" labels at the right end of each bar
+  // Plugin B: colored pill labels in fixed right column — one per bar
+  const PILL_STYLES = [
+    { bg: 'rgba(61,158,82,.18)',   text: '#267339' },   // UX — green
+    { bg: 'rgba(124,58,237,.18)',  text: '#5B21B6' },   // Frontend — purple
+    { bg: 'rgba(43,108,176,.18)',  text: '#1A4F8A' },   // Backend — blue
+    { bg: 'rgba(212,146,10,.18)',  text: '#8C5E00' },   // Integration — amber
+  ]
+
+  function pillRoundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath()
+    ctx.moveTo(x + r, y)
+    ctx.lineTo(x + w - r, y)
+    ctx.arcTo(x + w, y, x + w, y + r, r)
+    ctx.lineTo(x + w, y + h - r)
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r)
+    ctx.lineTo(x + r, y + h)
+    ctx.arcTo(x, y + h, x, y + h - r, r)
+    ctx.lineTo(x, y + r)
+    ctx.arcTo(x, y, x + r, y, r)
+    ctx.closePath()
+  }
+
   const barEndLabels = {
     id: 'barEndLabels',
     afterDraw(chart) {
-      const { ctx } = chart
+      const { ctx, chartArea } = chart
+      if (!chartArea) return
       ctx.save()
+
       chart.data.datasets.forEach((_, di) => {
         const meta = chart.getDatasetMeta(di)
         if (meta.hidden) return
         const { doneKey, totalKey } = DISC_FIELDS[di]
-        const color = LABEL_COLORS[di]
+        const { bg, text } = PILL_STYLES[di]
 
         meta.data.forEach((bar, i) => {
           const m = modules[i]
-          if (!m) return
-          const total = m[totalKey]
-          const done  = m[doneKey]
-          if (total === 0 || done === 0) return
+          if (!m || m[totalKey] === 0) return
 
-          ctx.font = "600 10px 'Inter', sans-serif"
-          ctx.fillStyle = color
-          ctx.textAlign = 'left'
+          const done  = m[doneKey]
+          const total = m[totalKey]
+          const label = `${done} / ${total}`
+
+          ctx.font = "600 10.5px 'Inter', sans-serif"
+          const tw = ctx.measureText(label).width
+          const pH = 17
+          const pW = tw + 14
+          const pR = pH / 2
+          const px = chartArea.right + 10
+          const py = bar.y - pH / 2
+
+          pillRoundRect(ctx, px, py, pW, pH, pR)
+          ctx.fillStyle = bg
+          ctx.fill()
+
+          ctx.fillStyle = text
+          ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(`${done} of ${total} completed`, bar.x + 6, bar.y)
+          ctx.fillText(label, px + pW / 2, bar.y)
         })
       })
       ctx.restore()
@@ -79,8 +114,8 @@ export default function ModuleHealthChart({ modules }) {
     borderWidth: 0,
     borderRadius: 6,
     borderSkipped: false,
-    barPercentage: 0.85,
-    categoryPercentage: 0.60,
+    barPercentage: 0.90,
+    categoryPercentage: 0.82,
     minBarLength: 3,
   }
 
@@ -91,6 +126,12 @@ export default function ModuleHealthChart({ modules }) {
         label: 'UX',
         data: modules.map(m => pct(m.uxD, m.uxT)),
         backgroundColor: modules.map(m => pct(m.uxD, m.uxT) === 0 ? DISC_COLORS.ux.zero : DISC_COLORS.ux.bg),
+        ...shared,
+      },
+      {
+        label: 'Frontend',
+        data: modules.map(m => pct(m.feD, m.feT)),
+        backgroundColor: modules.map(m => pct(m.feD, m.feT) === 0 ? DISC_COLORS.frontend.zero : DISC_COLORS.frontend.bg),
         ...shared,
       },
       {
@@ -105,12 +146,6 @@ export default function ModuleHealthChart({ modules }) {
         backgroundColor: modules.map(m => pct(m.inD, m.inT) === 0 ? DISC_COLORS.integration.zero : DISC_COLORS.integration.bg),
         ...shared,
       },
-      {
-        label: 'Frontend',
-        data: modules.map(m => pct(m.feD, m.feT)),
-        backgroundColor: modules.map(m => pct(m.feD, m.feT) === 0 ? DISC_COLORS.frontend.zero : DISC_COLORS.frontend.bg),
-        ...shared,
-      },
     ],
   }
 
@@ -118,7 +153,7 @@ export default function ModuleHealthChart({ modules }) {
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
-    layout: { padding: { right: 110 } },
+    layout: { padding: { right: 135 } },
     plugins: {
       legend: {
         position: 'top',
@@ -176,13 +211,13 @@ export default function ModuleHealthChart({ modules }) {
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
           <span className="badge badge-ux">UX</span>
+          <span className="badge" style={{ background: 'rgba(124,58,237,.12)', color: '#5B21B6' }}>Frontend</span>
           <span className="badge badge-be">Backend</span>
           <span className="badge badge-int">Integration</span>
-          <span className="badge" style={{ background: 'rgba(124,58,237,.12)', color: '#5B21B6' }}>Frontend</span>
         </div>
       </div>
       <div style={{ padding: '16px 20px 22px' }}>
-        <div style={{ height: 680 }}>
+        <div style={{ height: Math.max(680, (modules?.length ?? 10) * 88) }}>
           <Bar data={data} options={options} plugins={[twoLineLabel, barEndLabels]} />
         </div>
       </div>
