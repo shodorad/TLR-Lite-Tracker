@@ -1,0 +1,9 @@
+{
+  "installCommand": "cd apps/TrackerDashboard && npm install",
+  "buildCommand": "cd apps/TrackerDashboard && npm run build",
+  "outputDirectory": "apps/TrackerDashboard/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ]
+}
