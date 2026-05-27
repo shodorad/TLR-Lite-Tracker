@@ -3,7 +3,6 @@ import { fetchDashboardData } from './api.js'
 import { processData } from './dataProcessor.js'
 import { autoDetectMode, getDateRange } from './utils/dateUtils.js'
 import Header from './components/Header.jsx'
-import StatCards from './components/StatCards.jsx'
 import DoneThisWeek from './components/DoneThisWeek.jsx'
 import ModuleRollup from './components/ModuleRollup.jsx'
 import FlowDetail from './components/FlowDetail.jsx'
@@ -26,10 +25,7 @@ export default function App() {
   const [flowBreakdownCollapsed, setFlowBreakdownCollapsed] = useState(
     () => localStorage.getItem('flowBreakdownCollapsed') !== 'false'
   )
-  const [moduleHealthCollapsed, setModuleHealthCollapsed] = useState(
-    () => localStorage.getItem('moduleHealthCollapsed') === 'true'
-  )
-  const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
+const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
     () => localStorage.getItem('doneThisWeekCollapsed') === 'true'
   )
 
@@ -74,13 +70,6 @@ export default function App() {
     })
   }
 
-  function toggleModuleHealth() {
-    setModuleHealthCollapsed(c => {
-      const next = !c
-      localStorage.setItem('moduleHealthCollapsed', String(next))
-      return next
-    })
-  }
 
   function toggleDoneThisWeek() {
     setDoneThisWeekCollapsed(c => {
@@ -124,8 +113,8 @@ export default function App() {
             {/* Hero row — 2 columns: stacked pair (overall + demo) · cadence */}
             <div className="hero-three">
               <div className="hero-stacked-pair">
-                <OverallProgress stats={data.stats} />
-                <DemoReadiness stats={data.stats} flows={data.flows} modules={data.modules} rawFlows={rawFlows} />
+                <OverallProgress stats={data.stats} totalFlows={data.totalFlows} />
+                <DemoReadiness stats={data.stats} flows={data.flows} modules={data.modules} rawFlows={rawFlows} totalFlows={data.totalFlows} />
               </div>
               <StatusBriefing
                 stats={data.stats}
@@ -135,6 +124,7 @@ export default function App() {
                 flows={data.flows}
                 rawFlows={rawFlows}
                 dateRange={dateRange}
+                totalFlows={data.totalFlows}
               />
             </div> {/* end .hero-three */}
 
@@ -143,25 +133,6 @@ export default function App() {
 
             {/* Module accordions — full width, below chart */}
             <StatusBriefingModules modules={data.modules} />
-
-            {/* Discipline Breakdown — collapsible, full width */}
-            <div className="card">
-              <div className="card-header clickable" onClick={toggleModuleHealth}>
-                <span className="card-title">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(57% 0.19 258)" strokeWidth="2.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <path d="M3 9h18M3 15h18M9 3v18"/>
-                  </svg>
-                  Discipline Breakdown
-                  <span className={`chevron ${moduleHealthCollapsed ? 'collapsed' : ''}`}>▼</span>
-                </span>
-              </div>
-              {!moduleHealthCollapsed && (
-                <div style={{ padding: '16px 20px 20px' }}>
-                  <StatCards stats={data.stats} />
-                </div>
-              )}
-            </div>
 
             {/* Flow Detail Breakdown — collapsed by default */}
             <div className="card flow-breakdown-card">
