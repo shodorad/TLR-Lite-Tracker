@@ -1,4 +1,4 @@
-import { pct, colorForPct, PCT_HEX, TOTAL_FLOWS } from '../dataProcessor.js'
+import { pct, colorForPct, PCT_HEX } from '../dataProcessor.js'
 
 const CARDS = [
   { label: 'UX',          doneKey: 'uxDone'  },
@@ -7,8 +7,8 @@ const CARDS = [
   { label: 'Integration', doneKey: 'intDone' },
 ]
 
-function StatCard({ label, done }) {
-  const p   = pct(done, TOTAL_FLOWS)
+function StatCard({ label, done, totalFlows }) {
+  const p   = pct(done, totalFlows)
   const col = colorForPct(p)
   const hex = PCT_HEX[col]
 
@@ -23,7 +23,7 @@ function StatCard({ label, done }) {
           {p}%
         </div>
         <div style={{ fontSize: 11, color: '#BBBBBB', marginTop: 2, fontWeight: 500 }}>
-          {done}/{TOTAL_FLOWS}
+          {done}/{totalFlows}
         </div>
       </div>
 
@@ -37,11 +37,11 @@ function StatCard({ label, done }) {
   )
 }
 
-export default function StatCards({ stats }) {
+export default function StatCards({ stats, totalFlows = 0 }) {
   return (
     <div className="stat-row">
       {CARDS.map(c => (
-        <StatCard key={c.label} label={c.label} done={stats[c.doneKey]} />
+        <StatCard key={c.label} label={c.label} done={stats[c.doneKey]} totalFlows={totalFlows} />
       ))}
     </div>
   )

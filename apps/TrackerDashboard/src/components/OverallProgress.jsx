@@ -1,5 +1,5 @@
 import { Doughnut } from 'react-chartjs-2'
-import { pct, TOTAL_FLOWS } from '../dataProcessor.js'
+import { pct } from '../dataProcessor.js'
 
 const DISC = [
   { key: 'ux',  label: 'UX',          doneKey: 'uxDone',  color: '#3D9E52', bg: 'rgba(61,158,82,0.11)',   fg: '#267339' },
@@ -8,9 +8,9 @@ const DISC = [
   { key: 'int', label: 'Integration', doneKey: 'intDone', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
 ]
 
-export default function OverallProgress({ stats }) {
+export default function OverallProgress({ stats, totalFlows = 0 }) {
   const totalDone = DISC.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
-  const TOTAL_TASKS = TOTAL_FLOWS * DISC.length
+  const TOTAL_TASKS = totalFlows * DISC.length
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
 
@@ -32,7 +32,7 @@ export default function OverallProgress({ stats }) {
   }
 
   return (
-    <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: 316 }}>
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', minHeight: 344 }}>
 
       {/* Header */}
       <div style={{ padding: '12px 16px 8px', background: 'rgba(61,158,82,.05)', borderBottom: '1px solid rgba(61,158,82,.1)' }}>
@@ -43,7 +43,7 @@ export default function OverallProgress({ stats }) {
           </svg>
           Overall Progress
         </div>
-        <div style={{ fontSize: 10, color: 'var(--quiet)' }}>4 disciplines · {TOTAL_FLOWS} flows</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)' }}>4 disciplines · {totalFlows} flows</div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'stretch', padding: '12px 16px', gap: 18, flex: 1, minHeight: 0 }}>
@@ -65,7 +65,7 @@ export default function OverallProgress({ stats }) {
               }}>
                 {totalPct}%
               </span>
-              <span style={{ fontSize: 10, color: '#999', fontWeight: 500, marginTop: 4, letterSpacing: '.02em', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: 11, color: '#777', fontWeight: 600, marginTop: 4, letterSpacing: '.04em', textTransform: 'uppercase' }}>
                 complete
               </span>
             </div>
@@ -79,11 +79,11 @@ export default function OverallProgress({ stats }) {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div>
               <p style={{ fontSize: 13, color: '#666', lineHeight: 1.5 }}>
-                <strong style={{ color: '#333', fontWeight: 600 }}>{TOTAL_FLOWS} flows</strong>
+                <strong style={{ color: '#333', fontWeight: 600 }}>{totalFlows} flows</strong>
                 {' '}across{' '}
-                <strong style={{ color: '#333', fontWeight: 600 }}>10 modules</strong>
+                <strong style={{ color: '#333', fontWeight: 600 }}>10 journeys</strong>
               </p>
-              <p style={{ fontSize: 11, color: '#999999', fontWeight: 500, marginTop: 2 }}>
+              <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 500, marginTop: 2 }}>
                 {remaining} tasks remaining
               </p>
             </div>
@@ -108,17 +108,17 @@ export default function OverallProgress({ stats }) {
           {/* Bottom: discipline breakdown */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {DISC.map(d => {
-              const p = pct(stats[d.doneKey], TOTAL_FLOWS)
+              const p = pct(stats[d.doneKey], totalFlows)
               return (
                 <div key={d.key} style={{ background: d.bg, borderRadius: 8, padding: '7px 10px' }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: d.fg, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 3 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: d.fg, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 3 }}>
                     {d.label}
                   </div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: d.fg, lineHeight: 1, letterSpacing: '-.04em', fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' }}>
                     {p}%
                   </div>
-                  <div style={{ fontSize: 10, color: d.fg, opacity: .6, marginTop: 2, fontWeight: 500 }}>
-                    {stats[d.doneKey]}/{TOTAL_FLOWS}
+                  <div style={{ fontSize: 12, color: d.fg, opacity: .75, marginTop: 3, fontWeight: 600 }}>
+                    {stats[d.doneKey]}/{totalFlows}
                   </div>
                 </div>
               )

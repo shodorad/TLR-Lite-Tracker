@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { pct as calcPct, TOTAL_FLOWS, MODULE_ORDER } from '../dataProcessor.js'
+import { pct as calcPct, MODULE_ORDER } from '../dataProcessor.js'
 
 const MODULE_ORDER_SET = new Set(MODULE_ORDER)
 
@@ -122,11 +122,11 @@ function countStatus(subtasks, discField, match) {
   }).length
 }
 
-function buildStreams(stats, subtasks, rawFlows, modules) {
+function buildStreams(stats, subtasks, rawFlows, modules, totalFlows) {
   const moduleDueDates = getModuleDueDates(rawFlows)
   return STREAMS.map(s => {
     const done       = stats[s.doneKey] ?? 0
-    const total      = TOTAL_FLOWS
+    const total      = totalFlows
     const p          = calcPct(done, total)
     const { status: health, label: healthLabel } = healthFor(p, s.key, modules, moduleDueDates)
     const inProgress = countStatus(subtasks, s.discField, st => st.includes('progress'))
@@ -177,17 +177,17 @@ function HealthPill({ status, label }) {
 
 function MetricParts({ done, inProgress, blocked, notStarted }) {
   const items = [
-    { n: done,       label: 'done',        color: 'var(--text)' },
-    inProgress > 0 ? { n: inProgress, label: 'in progress', color: 'var(--text)'     } : null,
+    { n: done,       label: 'done',        color: 'var(--ink)' },
+    inProgress > 0 ? { n: inProgress, label: 'in progress', color: 'var(--ink)'      } : null,
     blocked    > 0 ? { n: blocked,    label: 'blocked',     color: 'var(--red-text)' } : null,
-    notStarted > 0 ? { n: notStarted, label: 'not started', color: 'var(--text)'     } : null,
+    notStarted > 0 ? { n: notStarted, label: 'not started', color: 'var(--ink)'      } : null,
   ].filter(Boolean)
   return (
-    <div style={{ fontSize: 12, color: 'var(--quiet)', lineHeight: 1.5 }}>
+    <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>
       {items.map((item, i) => (
         <span key={item.label}>
-          {i > 0 && <span style={{ color: 'var(--quiet)', margin: '0 4px' }}>·</span>}
-          <strong style={{ color: item.color, fontWeight: 600 }}>{item.n}</strong>{' '}{item.label}
+          {i > 0 && <span style={{ color: 'rgba(0,0,0,.2)', margin: '0 5px' }}>·</span>}
+          <strong style={{ color: item.color, fontWeight: 700 }}>{item.n}</strong>{' '}{item.label}
         </span>
       ))}
     </div>
@@ -230,7 +230,7 @@ function Metric({ stream, cadence, targeting }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: fill }}>{pct}%</div>
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--quiet)' }}>
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>
           {cadence === 'recap' ? 'final this week' : `of ${total} subtasks`}
         </div>
       </div>
@@ -245,13 +245,13 @@ function Metric({ stream, cadence, targeting }) {
 function StreamCard({ stream, cadence, targeting, onViewDetails }) {
   return (
     <div className="briefing-stream-card">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 15, letterSpacing: '-0.005em' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 15.5, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: stream.dot, flexShrink: 0 }} />
         <span>{stream.label}</span>
         <HealthPill status={stream.health} label={stream.healthLabel} />
       </div>
       <Metric stream={stream} cadence={cadence} targeting={targeting} />
-      <p style={{ color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.55, flex: 1 }}>
+      <p style={{ color: 'var(--text)', fontSize: 13.5, lineHeight: 1.6, flex: 1 }}>
         {narrative(stream, cadence, targeting)}
       </p>
       <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
@@ -342,12 +342,12 @@ function ModuleRow({ module, openKey, onToggle }) {
 }
 
 // ── Cadence + stream cards (goes in the right column) ────────────────────────
-export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlows, dateRange }) {
+export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlows, dateRange, totalFlows = 0 }) {
   const [cadence, setCadence] = useState('midweek')
 
   if (!stats || !modules) return null
 
-  const streams       = buildStreams(stats, subtasks, rawFlows, modules)
+  const streams       = buildStreams(stats, subtasks, rawFlows, modules, totalFlows)
   const flowDateMap   = buildFlowDateMap(rawFlows, subtasks)
   const targetedFlows = getTargetedFlows(flows, flowDateMap)
   const targetingMap = {}

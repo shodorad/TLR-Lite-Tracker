@@ -24,8 +24,6 @@ export const MODULE_COLORS = [
   '#3A9688',
 ]
 
-export const TOTAL_FLOWS = 51
-
 export function pct(done, total) {
   return total === 0 ? 0 : Math.round((done / total) * 100)
 }
@@ -148,10 +146,17 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
     return !phase2FlowKeys.has(pk)
   })
 
+  // Total flows = Phase 1 flow issues fetched from Jira (every flow whose parent
+  // epic is a known Phase 1 module). Computed each fetch so it tracks Jira — never
+  // hard-coded. Falls back to the distinct flows seen in subtasks when rawFlows is
+  // empty (e.g. the component-tag code path).
+  const totalFlows = Object.keys(flowModuleMap).length || Object.keys(flowMap).length
+
   return {
     stats: { uxDone, beDone, intDone, feDone },
     modules: MODULE_ORDER.map(n => modMap[n]).filter(Boolean),
     flows,
     doneWeek: filteredDoneWeek,
+    totalFlows,
   }
 }

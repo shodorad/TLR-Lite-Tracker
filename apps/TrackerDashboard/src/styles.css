@@ -720,8 +720,8 @@ tbody tr:hover td { background: rgba(0,0,0,.018); }
 }
 
 .demo-panel-sub {
-  font-size: 10px;
-  color: var(--quiet);
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .demo-countdown-pill {
@@ -771,7 +771,7 @@ tbody tr:hover td { background: rgba(0,0,0,.018); }
 
 .demo-done-label {
   text-align: center;
-  font-size: 10.5px;
+  font-size: 13px;
   color: #5B21B6;
   font-weight: 600;
   margin: 4px 0 0;

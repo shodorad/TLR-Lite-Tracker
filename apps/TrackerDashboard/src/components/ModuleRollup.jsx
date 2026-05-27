@@ -22,15 +22,15 @@ export default function ModuleRollup({ modules }) {
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <path d="M8 21h8M12 17v4"/>
           </svg>
-          Per-Module Rollup
+          Per-Journey Rollup
         </span>
-        <span className="badge badge-blue">10 Modules</span>
+        <span className="badge badge-blue">10 Journeys</span>
       </div>
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Module</th>
+              <th>Journey</th>
               <th style={{ textAlign: 'center' }}># Flows</th>
               <th style={{ minWidth: 130 }}>UX %</th>
               <th style={{ minWidth: 130 }}>Backend %</th>

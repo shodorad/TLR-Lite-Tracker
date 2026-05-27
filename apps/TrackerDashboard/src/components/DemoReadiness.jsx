@@ -1,5 +1,5 @@
 import { Doughnut } from 'react-chartjs-2'
-import { pct, TOTAL_FLOWS } from '../dataProcessor.js'
+import { pct } from '../dataProcessor.js'
 
 const DEMO_DATE = new Date('2026-05-31T00:00:00')
 
@@ -10,9 +10,9 @@ function daysToDemo() {
 }
 
 const KPI_S = {
-  label: { fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 4 },
+  label: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 4, whiteSpace: 'nowrap' },
   num:   { lineHeight: 1, letterSpacing: '-.04em', fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' },
-  count: { fontSize: 10, opacity: .6, marginTop: 3, fontWeight: 500 },
+  count: { fontSize: 12, opacity: .75, marginTop: 3, fontWeight: 600 },
   tile:  { borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' },
 }
 
@@ -38,13 +38,13 @@ function flowsBehindForDemo(modules, rawFlows) {
   return behind
 }
 
-export default function DemoReadiness({ stats, flows, modules, rawFlows }) {
+export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFlows = 0 }) {
   const { uxDone = 0, feDone = 0 } = stats ?? {}
-  const TOTAL_DEMO = TOTAL_FLOWS * 2
+  const TOTAL_DEMO = totalFlows * 2
   const demoDone = uxDone + feDone
   const demoPct  = pct(demoDone, TOTAL_DEMO)
-  const uxPct    = pct(uxDone, TOTAL_FLOWS)
-  const fePct    = pct(feDone, TOTAL_FLOWS)
+  const uxPct    = pct(uxDone, totalFlows)
+  const fePct    = pct(feDone, totalFlows)
   const days     = daysToDemo()
 
   const atRisk = flowsBehindForDemo(modules, rawFlows)
@@ -100,14 +100,14 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows }) {
           <div style={{ ...KPI_S.tile, background: 'rgba(139,92,246,.1)' }}>
             <div style={{ ...KPI_S.label, color: '#5235A0' }}>UX</div>
             <div style={{ ...KPI_S.num, fontSize: 22, fontWeight: 800, color: '#5235A0' }}>{uxPct}%</div>
-            <div style={{ ...KPI_S.count, color: '#5235A0' }}>{uxDone}/{TOTAL_FLOWS}</div>
+            <div style={{ ...KPI_S.count, color: '#5235A0' }}>{uxDone}/{totalFlows}</div>
           </div>
 
           {/* Frontend */}
           <div style={{ ...KPI_S.tile, background: 'rgba(124,58,237,.1)' }}>
             <div style={{ ...KPI_S.label, color: '#5B21B6' }}>Frontend</div>
             <div style={{ ...KPI_S.num, fontSize: 22, fontWeight: 800, color: '#5B21B6' }}>{fePct}%</div>
-            <div style={{ ...KPI_S.count, color: '#5B21B6' }}>{feDone}/{TOTAL_FLOWS}</div>
+            <div style={{ ...KPI_S.count, color: '#5B21B6' }}>{feDone}/{totalFlows}</div>
           </div>
 
         </div>
@@ -130,8 +130,8 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows }) {
                 {demoPct}%
               </span>
               <span style={{
-                fontSize: 9, color: '#7c3aed', fontWeight: 700,
-                marginTop: 4, textTransform: 'uppercase', letterSpacing: '.07em', opacity: .7,
+                fontSize: 11, color: '#7c3aed', fontWeight: 700,
+                marginTop: 4, textTransform: 'uppercase', letterSpacing: '.06em',
               }}>
                 ready
               </span>

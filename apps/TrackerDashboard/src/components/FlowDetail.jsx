@@ -107,7 +107,7 @@ export default function FlowDetail({ flows }) {
                 <tr>
                   <th>F-###</th>
                   <th>Flow Name</th>
-                  <th>Module</th>
+                  <th>Journey</th>
                   <th>UX</th>
                   <th>Backend</th>
                   <th>Integration</th>
