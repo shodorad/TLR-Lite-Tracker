@@ -4,10 +4,10 @@ import { pct as calcPct, MODULE_ORDER } from '../dataProcessor.js'
 const MODULE_ORDER_SET = new Set(MODULE_ORDER)
 
 const STREAMS = [
-  { key: 'ux',          label: 'UX Design',   discField: 'UX',          flowKey: 'ux',          doneKey: 'uxDone',  fill: '#3D9E52', dot: '#3D9E52' },
-  { key: 'frontend',    label: 'Frontend',     discField: 'Frontend',    flowKey: 'frontend',     doneKey: 'feDone',  fill: '#7C3AED', dot: '#7C3AED' },
-  { key: 'backend',     label: 'Backend',      discField: 'Backend',     flowKey: 'backend',      doneKey: 'beDone',  fill: '#2B6CB0', dot: '#2B6CB0' },
-  { key: 'integration', label: 'Integration',  discField: 'Integration', flowKey: 'integration',  doneKey: 'intDone', fill: '#D4920A', dot: '#D4920A' },
+  { key: 'ux',          label: 'UX Design',   discField: 'UX',          flowKey: 'ux',          doneKey: 'uxDone',  totalKey: 'uxTotal',  fill: '#3D9E52', dot: '#3D9E52' },
+  { key: 'frontend',    label: 'Frontend',     discField: 'Frontend',    flowKey: 'frontend',     doneKey: 'feDone',  totalKey: 'feTotal',  fill: '#7C3AED', dot: '#7C3AED' },
+  { key: 'backend',     label: 'Backend',      discField: 'Backend',     flowKey: 'backend',      doneKey: 'beDone',  totalKey: 'beTotal',  fill: '#2B6CB0', dot: '#2B6CB0' },
+  { key: 'integration', label: 'Integration',  discField: 'Integration', flowKey: 'integration',  doneKey: 'intDone', totalKey: 'intTotal', fill: '#D4920A', dot: '#D4920A' },
 ]
 
 const CADENCES = [
@@ -122,11 +122,11 @@ function countStatus(subtasks, discField, match) {
   }).length
 }
 
-function buildStreams(stats, subtasks, rawFlows, modules, totalFlows) {
+function buildStreams(stats, subtasks, rawFlows, modules) {
   const moduleDueDates = getModuleDueDates(rawFlows)
   return STREAMS.map(s => {
     const done       = stats[s.doneKey] ?? 0
-    const total      = totalFlows
+    const total      = stats[s.totalKey] ?? 0
     const p          = calcPct(done, total)
     const { status: health, label: healthLabel } = healthFor(p, s.key, modules, moduleDueDates)
     const inProgress = countStatus(subtasks, s.discField, st => st.includes('progress'))
@@ -347,7 +347,7 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
 
   if (!stats || !modules) return null
 
-  const streams       = buildStreams(stats, subtasks, rawFlows, modules, totalFlows)
+  const streams       = buildStreams(stats, subtasks, rawFlows, modules)
   const flowDateMap   = buildFlowDateMap(rawFlows, subtasks)
   const targetedFlows = getTargetedFlows(flows, flowDateMap)
   const targetingMap = {}
