@@ -39,12 +39,12 @@ function flowsBehindForDemo(modules, rawFlows) {
 }
 
 export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFlows = 0 }) {
-  const { uxDone = 0, feDone = 0 } = stats ?? {}
-  const TOTAL_DEMO = totalFlows * 2
+  const { uxDone = 0, feDone = 0, uxTotal = 0, feTotal = 0 } = stats ?? {}
+  const TOTAL_DEMO = uxTotal + feTotal
   const demoDone = uxDone + feDone
   const demoPct  = pct(demoDone, TOTAL_DEMO)
-  const uxPct    = pct(uxDone, totalFlows)
-  const fePct    = pct(feDone, totalFlows)
+  const uxPct    = pct(uxDone, uxTotal)
+  const fePct    = pct(feDone, feTotal)
   const days     = daysToDemo()
 
   const atRisk = flowsBehindForDemo(modules, rawFlows)
@@ -100,14 +100,14 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFl
           <div style={{ ...KPI_S.tile, background: 'rgba(139,92,246,.1)' }}>
             <div style={{ ...KPI_S.label, color: '#5235A0' }}>UX</div>
             <div style={{ ...KPI_S.num, fontSize: 22, fontWeight: 800, color: '#5235A0' }}>{uxPct}%</div>
-            <div style={{ ...KPI_S.count, color: '#5235A0' }}>{uxDone}/{totalFlows}</div>
+            <div style={{ ...KPI_S.count, color: '#5235A0' }}>{uxDone}/{uxTotal}</div>
           </div>
 
           {/* Frontend */}
           <div style={{ ...KPI_S.tile, background: 'rgba(124,58,237,.1)' }}>
             <div style={{ ...KPI_S.label, color: '#5B21B6' }}>Frontend</div>
             <div style={{ ...KPI_S.num, fontSize: 22, fontWeight: 800, color: '#5B21B6' }}>{fePct}%</div>
-            <div style={{ ...KPI_S.count, color: '#5B21B6' }}>{feDone}/{totalFlows}</div>
+            <div style={{ ...KPI_S.count, color: '#5B21B6' }}>{feDone}/{feTotal}</div>
           </div>
 
         </div>

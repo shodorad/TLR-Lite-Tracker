@@ -2,15 +2,17 @@ import { Doughnut } from 'react-chartjs-2'
 import { pct } from '../dataProcessor.js'
 
 const DISC = [
-  { key: 'ux',  label: 'UX',          doneKey: 'uxDone',  color: '#3D9E52', bg: 'rgba(61,158,82,0.11)',   fg: '#267339' },
-  { key: 'fe',  label: 'Frontend',    doneKey: 'feDone',  color: '#7C3AED', bg: 'rgba(124,58,237,0.11)',  fg: '#5B21B6' },
-  { key: 'be',  label: 'Backend',     doneKey: 'beDone',  color: '#2B6CB0', bg: 'rgba(43,108,176,0.11)',  fg: '#1A4F8A' },
-  { key: 'int', label: 'Integration', doneKey: 'intDone', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
+  { key: 'ux',  label: 'UX',          doneKey: 'uxDone',  totalKey: 'uxTotal',  color: '#3D9E52', bg: 'rgba(61,158,82,0.11)',   fg: '#267339' },
+  { key: 'fe',  label: 'Frontend',    doneKey: 'feDone',  totalKey: 'feTotal',  color: '#7C3AED', bg: 'rgba(124,58,237,0.11)',  fg: '#5B21B6' },
+  { key: 'be',  label: 'Backend',     doneKey: 'beDone',  totalKey: 'beTotal',  color: '#2B6CB0', bg: 'rgba(43,108,176,0.11)',  fg: '#1A4F8A' },
+  { key: 'int', label: 'Integration', doneKey: 'intDone', totalKey: 'intTotal', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
 ]
 
 export default function OverallProgress({ stats, totalFlows = 0 }) {
   const totalDone = DISC.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
-  const TOTAL_TASKS = totalFlows * DISC.length
+  // Sum of subtasks that actually exist per discipline — not totalFlows × 4,
+  // which assumes every flow has all four disciplines.
+  const TOTAL_TASKS = DISC.reduce((sum, d) => sum + (stats[d.totalKey] ?? 0), 0)
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
 
@@ -108,7 +110,7 @@ export default function OverallProgress({ stats, totalFlows = 0 }) {
           {/* Bottom: discipline breakdown */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {DISC.map(d => {
-              const p = pct(stats[d.doneKey], totalFlows)
+              const p = pct(stats[d.doneKey], stats[d.totalKey])
               return (
                 <div key={d.key} style={{ background: d.bg, borderRadius: 8, padding: '7px 10px' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: d.fg, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 3 }}>
@@ -118,7 +120,7 @@ export default function OverallProgress({ stats, totalFlows = 0 }) {
                     {p}%
                   </div>
                   <div style={{ fontSize: 12, color: d.fg, opacity: .75, marginTop: 3, fontWeight: 600 }}>
-                    {stats[d.doneKey]}/{totalFlows}
+                    {stats[d.doneKey]}/{stats[d.totalKey]}
                   </div>
                 </div>
               )

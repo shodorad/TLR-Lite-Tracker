@@ -73,6 +73,7 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
   // Flow map: Task key → { code, name, module, ux, backend, integration }
   const flowMap = {}
   let uxDone = 0, beDone = 0, intDone = 0, feDone = 0
+  let uxTotal = 0, beTotal = 0, intTotal = 0, feTotal = 0
 
   for (const iss of subtasks) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
@@ -107,10 +108,13 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
       else if (disc === 'Frontend') { flowMap[pk].frontend = statusName; if (isDone) flowMap[pk].feDone = true }
     }
 
-    if (disc === 'UX') { if (isDone) uxDone++ }
-    else if (disc === 'Backend') { if (isDone) beDone++ }
-    else if (disc === 'Integration') { if (isDone) intDone++ }
-    else if (disc === 'Frontend') { if (isDone) feDone++ }
+    // Per-discipline totals/done count the same population as the denominator —
+    // every non-Phase-2 subtask of this discipline — so "all done" reads as 100%
+    // even when a discipline isn't broken out on every flow.
+    if (disc === 'UX') { uxTotal++; if (isDone) uxDone++ }
+    else if (disc === 'Backend') { beTotal++; if (isDone) beDone++ }
+    else if (disc === 'Integration') { intTotal++; if (isDone) intDone++ }
+    else if (disc === 'Frontend') { feTotal++; if (isDone) feDone++ }
 
     const m = modMap[comp]
     if (m) {
@@ -153,7 +157,7 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
   const totalFlows = Object.keys(flowModuleMap).length || Object.keys(flowMap).length
 
   return {
-    stats: { uxDone, beDone, intDone, feDone },
+    stats: { uxDone, beDone, intDone, feDone, uxTotal, beTotal, intTotal, feTotal },
     modules: MODULE_ORDER.map(n => modMap[n]).filter(Boolean),
     flows,
     doneWeek: filteredDoneWeek,
