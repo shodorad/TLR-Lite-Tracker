@@ -291,12 +291,18 @@ function ModuleRow({ module, openKey, onToggle }) {
           {module.name}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, color: 'var(--quiet)', fontSize: 12.5 }}>
-          <span style={{
-            whiteSpace: 'nowrap', fontWeight: 600,
-            color: module.flowsDone === module.flowKeys.size ? 'var(--green-text)' : 'var(--text)',
-          }}>
-            {module.flowsDone} of {module.flowKeys.size} done
-          </span>
+          {module.flowKeys.size === 0 ? (
+            <span style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--quiet)' }}>
+              No flows yet
+            </span>
+          ) : (
+            <span style={{
+              whiteSpace: 'nowrap', fontWeight: 600,
+              color: module.flowsDone === module.flowKeys.size ? 'var(--green-text)' : 'var(--text)',
+            }}>
+              {module.flowsDone} of {module.flowKeys.size} done
+            </span>
+          )}
           <span style={{ whiteSpace: 'nowrap' }}>{overall}%</span>
           <svg className="briefing-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="9 18 15 12 9 6" />
@@ -424,7 +430,7 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
 }
 
 // ── Module Health accordions (full-width, below the hero row) ─────────────────
-export function StatusBriefingModules({ modules }) {
+export function StatusBriefingModules({ modules, title = 'Journey Health' }) {
   const [openModule, setOpenModule] = useState(null)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('journeyAccordionCollapsed') === 'true'
@@ -452,7 +458,7 @@ export function StatusBriefingModules({ modules }) {
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
-          Journey Health
+          {title}
           <span className={`chevron ${collapsed ? 'collapsed' : ''}`}>▼</span>
         </span>
       </div>

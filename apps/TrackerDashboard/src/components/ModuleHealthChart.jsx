@@ -19,7 +19,7 @@ const DISC_FIELDS = [
   { doneKey: 'inD', totalKey: 'inT' },
 ]
 
-export default function ModuleHealthChart({ modules }) {
+export default function ModuleHealthChart({ modules, title = 'Journey Health' }) {
   const labels = modules.map(m => m.name)
 
   // Plugin A: y-axis 2-line labels (journey name + total flows done)
@@ -207,7 +207,7 @@ export default function ModuleHealthChart({ modules }) {
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <path d="M3 9h18M3 15h18M9 3v18"/>
           </svg>
-          Journey Health
+          {title}
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
           <span className="badge badge-ux">UX</span>

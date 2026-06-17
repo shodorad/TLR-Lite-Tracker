@@ -8,7 +8,7 @@ const DISC = [
   { key: 'int', label: 'Integration', doneKey: 'intDone', totalKey: 'intTotal', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
 ]
 
-export default function OverallProgress({ stats, totalFlows = 0 }) {
+export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 10, journeyNoun = 'journeys' }) {
   const totalDone = DISC.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
   // Sum of subtasks that actually exist per discipline — not totalFlows × 4,
   // which assumes every flow has all four disciplines.
@@ -16,11 +16,16 @@ export default function OverallProgress({ stats, totalFlows = 0 }) {
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
 
-  const gaugeColor = totalPct > 75 ? '#3D9E52' : totalPct >= 25 ? '#D4920A' : '#E05252'
+  // 0% reads as "not started" (neutral), not "blocked" (red) — DESIGN.md status rule.
+  const gaugeColor = totalPct === 0 ? '#CCCCCC' : totalPct > 75 ? '#3D9E52' : totalPct >= 25 ? '#D4920A' : '#E05252'
+
+  // With no tasks at all (a not-yet-broken-out portal), [0,0] would render no ring.
+  // Fall back to a full neutral track so the gauge still reads as "empty", not missing.
+  const gaugeData = TOTAL_TASKS === 0 ? [0, 1] : [totalDone, remaining]
 
   const chartData = {
     datasets: [{
-      data: [totalDone, remaining],
+      data: gaugeData,
       backgroundColor: [gaugeColor, 'rgba(0,0,0,.07)'],
       borderWidth: 0,
       hoverBackgroundColor: [gaugeColor, 'rgba(0,0,0,.07)'],
@@ -75,7 +80,7 @@ export default function OverallProgress({ stats, totalFlows = 0 }) {
         </div>
 
         {/* Right: top group (context + badge + bar), disc grid below */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0, minWidth: 0 }}>
 
           {/* Top: overview cluster — context tight, then badge+bar grouped below */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -83,7 +88,7 @@ export default function OverallProgress({ stats, totalFlows = 0 }) {
               <p style={{ fontSize: 13, color: '#666', lineHeight: 1.5 }}>
                 <strong style={{ color: '#333', fontWeight: 600 }}>{totalFlows} flows</strong>
                 {' '}across{' '}
-                <strong style={{ color: '#333', fontWeight: 600 }}>10 journeys</strong>
+                <strong style={{ color: '#333', fontWeight: 600 }}>{journeyCount} {journeyNoun}</strong>
               </p>
               <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 500, marginTop: 2 }}>
                 {remaining} tasks remaining

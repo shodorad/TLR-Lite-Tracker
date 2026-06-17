@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { fetchDashboardData } from './api.js'
-import { processData } from './dataProcessor.js'
+import { processData, SURFACES } from './dataProcessor.js'
 import { autoDetectMode, getDateRange } from './utils/dateUtils.js'
 import Header from './components/Header.jsx'
 import DoneThisWeek from './components/DoneThisWeek.jsx'
@@ -10,6 +10,8 @@ import ModuleHealthChart from './components/ModuleHealthChart.jsx'
 import OverallProgress from './components/OverallProgress.jsx'
 import DemoReadiness from './components/DemoReadiness.jsx'
 import StatusBriefing, { StatusBriefingModules } from './components/StatusBriefing.jsx'
+import FeatureComparison from './components/FeatureComparison.jsx'
+import PortalsDashboard from './components/PortalsDashboard.jsx'
 
 export default function App() {
   const [data, setData] = useState(null)
@@ -19,7 +21,25 @@ export default function App() {
   const [error, setError] = useState(null)
   const [lastRefreshed, setLastRefreshed] = useState(null)
 
+  const [page, setPage] = useState(() => (
+    localStorage.getItem('activePage') === 'portals' ? 'portals' : 'mobile'
+  ))
+
   const [dateMode] = useState(autoDetectMode)
+
+  // Portal datasets reprocess the same Jira payload against each portal's epic set.
+  const portalDatasets = useMemo(() => {
+    if (!rawSubtasks || !rawFlows) return null
+    return {
+      admin:  processData(rawSubtasks, rawFlows, [], { moduleOrder: SURFACES.admin.moduleOrder,  moduleColors: SURFACES.admin.moduleColors }),
+      vendor: processData(rawSubtasks, rawFlows, [], { moduleOrder: SURFACES.vendor.moduleOrder, moduleColors: SURFACES.vendor.moduleColors }),
+    }
+  }, [rawSubtasks, rawFlows])
+
+  function handlePageChange(next) {
+    setPage(next)
+    localStorage.setItem('activePage', next)
+  }
 
   // Collapse states (all expanded by default)
   const [flowBreakdownCollapsed, setFlowBreakdownCollapsed] = useState(
@@ -85,6 +105,8 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
         lastRefreshed={lastRefreshed}
         loading={loading}
         onRefresh={handleRefresh}
+        page={page}
+        onPageChange={handlePageChange}
       />
 
       <main className="main">
@@ -108,7 +130,11 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
           </div>
         )}
 
-        {data && (
+        {data && page === 'portals' && portalDatasets && (
+          <PortalsDashboard datasets={portalDatasets} />
+        )}
+
+        {data && page === 'mobile' && (
           <div className="dashboard-single">
             {/* Hero row — 2 columns: stacked pair (overall + demo) · cadence */}
             <div className="hero-three">
@@ -155,6 +181,9 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
                 </div>
               )}
             </div>
+
+            {/* Feature Comparison — Bouncie vs. Tracklynk Lite — collapsed by default */}
+            <FeatureComparison />
 
             {/* Done This Week — collapsible */}
             <div className="card">

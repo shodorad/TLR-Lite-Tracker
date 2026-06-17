@@ -24,6 +24,52 @@ export const MODULE_COLORS = [
   '#3A9688',
 ]
 
+// ── Portal surfaces ─────────────────────────────────────────────────────────
+// The portal epics live in the same TLN project but track separate surfaces.
+// Each surface processes the same Jira payload against its own epic set, so a
+// subtask only counts toward the surface whose epic owns its parent flow.
+export const ADMIN_MODULE_ORDER = [
+  'User Management',
+  'Plan & Price Configuration',
+  'Vendor Management',
+  'eSIM Management',
+  'DTC Codes Management',
+  'MQTT Management',
+  'Payment Gateway',
+  'Order Management',
+  'Device Management',
+  'Device Provisoning',   // matches the Jira epic summary spelling
+]
+
+export const VENDOR_MODULE_ORDER = [
+  'Billing & Payments',
+  'Operations',
+  'Monitoring',
+  'Analytics',
+  'Support',
+  'APIs & Integrations',
+  'Reports',
+]
+
+const PORTAL_COLORS = [
+  '#3B6FD4',
+  '#3D9E52',
+  '#7B5EA7',
+  '#D4920A',
+  '#2196A8',
+  '#C0487A',
+  '#C07830',
+  '#5566D4',
+  '#3A9688',
+  '#E05252',
+]
+
+// Surface registry — the source of truth for which epics belong to each page.
+export const SURFACES = {
+  admin:  { id: 'admin',  label: 'Admin Portal',  moduleOrder: ADMIN_MODULE_ORDER,  moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
+  vendor: { id: 'vendor', label: 'Vendor Portal', moduleOrder: VENDOR_MODULE_ORDER, moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
+}
+
 export function pct(done, total) {
   return total === 0 ? 0 : Math.round((done / total) * 100)
 }
@@ -42,25 +88,30 @@ export const PCT_HEX = {
   neutral: '#CCCCCC',
 }
 
-export function processData(subtasks, rawFlows = [], doneWeek = []) {
-  // Build flowKey → module name from the Jira hierarchy (flow's parent epic)
-  // This is authoritative — only flows whose parent epic is a known Phase 1 module get counted.
+export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
+  const moduleOrder  = opts.moduleOrder  ?? MODULE_ORDER
+  const moduleColors = opts.moduleColors ?? MODULE_COLORS
+  const moduleSet    = new Set(moduleOrder)
+
+  // Build flowKey → module name from the Jira hierarchy (flow's parent epic).
+  // This is authoritative — only flows whose parent epic belongs to THIS surface
+  // get counted, so portal epics never leak into the mobile totals (or vice versa).
   const flowModuleMap = {}
   const phase2FlowKeys = new Set()
   for (const flow of rawFlows) {
     const parentSummary = flow.fields?.parent?.fields?.summary ?? ''
     if (/phase\s*2/i.test(parentSummary)) {
       phase2FlowKeys.add(flow.key)
-    } else if (MODULE_ORDER.includes(parentSummary)) {
+    } else if (moduleSet.has(parentSummary)) {
       flowModuleMap[flow.key] = parentSummary
     }
   }
   // Module buckets
   const modMap = {}
-  MODULE_ORDER.forEach((name, i) => {
+  moduleOrder.forEach((name, i) => {
     modMap[name] = {
       name,
-      color: MODULE_COLORS[i],
+      color: moduleColors[i % moduleColors.length],
       flowKeys: new Set(),
       flowsDone: 0,
       uxD: 0, uxT: 0,
@@ -88,6 +139,10 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
 
     // Exclude Phase 2 subtasks
     if (phase2FlowKeys.has(pk)) continue
+    // Skip subtasks whose flow belongs to a different surface (mobile vs portals).
+    // When rawFlows is present, flowModuleMap is the authoritative surface filter;
+    // the fallback (no rawFlows) keeps every subtask via the component-tag path.
+    if (rawFlows.length > 0 && !comp) continue
 
     if (pk && !flowMap[pk]) {
       flowMap[pk] = {
@@ -158,7 +213,7 @@ export function processData(subtasks, rawFlows = [], doneWeek = []) {
 
   return {
     stats: { uxDone, beDone, intDone, feDone, uxTotal, beTotal, intTotal, feTotal },
-    modules: MODULE_ORDER.map(n => modMap[n]).filter(Boolean),
+    modules: moduleOrder.map(n => modMap[n]).filter(Boolean),
     flows,
     doneWeek: filteredDoneWeek,
     totalFlows,

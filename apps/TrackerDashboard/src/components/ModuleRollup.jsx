@@ -13,7 +13,7 @@ function ProgressBar({ done, total }) {
   )
 }
 
-export default function ModuleRollup({ modules }) {
+export default function ModuleRollup({ modules, noun = 'Journey' }) {
   return (
     <div className="card">
       <div className="card-header">
@@ -22,15 +22,15 @@ export default function ModuleRollup({ modules }) {
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <path d="M8 21h8M12 17v4"/>
           </svg>
-          Per-Journey Rollup
+          Per-{noun} Rollup
         </span>
-        <span className="badge badge-blue">10 Journeys</span>
+        <span className="badge badge-blue">{modules.length} {noun}{modules.length === 1 ? '' : 's'}</span>
       </div>
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Journey</th>
+              <th>{noun}</th>
               <th style={{ textAlign: 'center' }}># Flows</th>
               <th style={{ minWidth: 130 }}>UX %</th>
               <th style={{ minWidth: 130 }}>Backend %</th>
