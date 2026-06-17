@@ -38,7 +38,7 @@ function ProgressBar({ done, total }) {
   )
 }
 
-export default function FlowDetail({ flows }) {
+export default function FlowDetail({ flows, noun = 'Journey', moduleColorMap = null }) {
   const [filter, setFilter] = useState('active')
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('flowDetailCollapsed') !== 'false'
@@ -85,21 +85,25 @@ export default function FlowDetail({ flows }) {
               All Flows
             </button>
           </div>
-          <span className="badge badge-blue">{shown.length} / 65</span>
+          <span className="badge badge-blue">{shown.length} / {flows.length}</span>
         </div>
       </div>
 
       {!collapsed && (
         shown.length === 0 ? (
-          <div className="empty">
-            No flows with progress yet.{' '}
-            <span
-              style={{ color: 'var(--blue)', cursor: 'pointer', fontWeight: 600 }}
-              onClick={() => setFilter('all')}
-            >
-              Show all 65 →
-            </span>
-          </div>
+          flows.length === 0 ? (
+            <div className="empty">No flows defined yet for this portal.</div>
+          ) : (
+            <div className="empty">
+              No flows with progress yet.{' '}
+              <span
+                style={{ color: 'var(--blue)', cursor: 'pointer', fontWeight: 600 }}
+                onClick={() => setFilter('all')}
+              >
+                Show all {flows.length} →
+              </span>
+            </div>
+          )
         ) : (
           <div className="table-wrap">
             <table>
@@ -107,7 +111,7 @@ export default function FlowDetail({ flows }) {
                 <tr>
                   <th>F-###</th>
                   <th>Flow Name</th>
-                  <th>Journey</th>
+                  <th>{noun}</th>
                   <th>UX</th>
                   <th>Backend</th>
                   <th>Integration</th>
@@ -117,7 +121,8 @@ export default function FlowDetail({ flows }) {
               <tbody>
                 {shown.map(f => {
                   const mIdx = MODULE_ORDER.indexOf(f.module)
-                  const dotColor = mIdx >= 0 ? MODULE_COLORS[mIdx] : '#94A3B8'
+                  const dotColor = moduleColorMap?.[f.module]
+                    ?? (mIdx >= 0 ? MODULE_COLORS[mIdx] : '#94A3B8')
                   const doneN = [f.ux, f.backend, f.integration].filter(s => s === 'Done').length
                   const flowName = f.name.replace(/^F-\d+\s*/, '')
                   return (
