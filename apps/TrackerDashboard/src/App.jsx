@@ -31,8 +31,8 @@ export default function App() {
   const portalDatasets = useMemo(() => {
     if (!rawSubtasks || !rawFlows) return null
     return {
-      admin:  processData(rawSubtasks, rawFlows, [], { moduleOrder: SURFACES.admin.moduleOrder,  moduleColors: SURFACES.admin.moduleColors }),
-      vendor: processData(rawSubtasks, rawFlows, [], { moduleOrder: SURFACES.vendor.moduleOrder, moduleColors: SURFACES.vendor.moduleColors }),
+      admin:  processData(rawSubtasks, rawFlows, [], { surfacePrefix: SURFACES.admin.prefix,  moduleColors: SURFACES.admin.moduleColors }),
+      vendor: processData(rawSubtasks, rawFlows, [], { surfacePrefix: SURFACES.vendor.prefix, moduleColors: SURFACES.vendor.moduleColors }),
     }
   }, [rawSubtasks, rawFlows])
 

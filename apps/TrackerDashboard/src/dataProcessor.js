@@ -25,31 +25,17 @@ export const MODULE_COLORS = [
 ]
 
 // ── Portal surfaces ─────────────────────────────────────────────────────────
-// The portal epics live in the same TLN project but track separate surfaces.
-// Each surface processes the same Jira payload against its own epic set, so a
-// subtask only counts toward the surface whose epic owns its parent flow.
-export const ADMIN_MODULE_ORDER = [
-  'User Management',
-  'Plan & Price Configuration',
-  'Vendor Management',
-  'eSIM Management',
-  'DTC Codes Management',
-  'MQTT Management',
-  'Payment Gateway',
-  'Order Management',
-  'Device Management',
-  'Device Provisoning',   // matches the Jira epic summary spelling
-]
+// The portal epics live in the same TLN project, prefixed "Admin …" / "Vendor …".
+// We never hard-code the module list: each surface is derived live from Jira by
+// matching the epic-summary prefix, so adding or renaming a portal epic in Jira
+// flows straight through. The prefix is stripped for display.
+function stripPortalPrefix(summary) {
+  return (summary ?? '').replace(/^(Admin|Vendor)\b\s*[-–]?\s*/i, '').trim()
+}
 
-export const VENDOR_MODULE_ORDER = [
-  'Billing & Payments',
-  'Operations',
-  'Monitoring',
-  'Analytics',
-  'Support',
-  'APIs & Integrations',
-  'Reports',
-]
+function matchesSurface(summary, prefix) {
+  return new RegExp(`^${prefix}\\b`, 'i').test(summary ?? '')
+}
 
 const PORTAL_COLORS = [
   '#3B6FD4',
@@ -65,9 +51,10 @@ const PORTAL_COLORS = [
 ]
 
 // Surface registry — the source of truth for which epics belong to each page.
+// `prefix` is matched against Jira epic summaries to pull each portal's modules.
 export const SURFACES = {
-  admin:  { id: 'admin',  label: 'Admin Portal',  moduleOrder: ADMIN_MODULE_ORDER,  moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
-  vendor: { id: 'vendor', label: 'Vendor Portal', moduleOrder: VENDOR_MODULE_ORDER, moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
+  admin:  { id: 'admin',  label: 'Admin Portal',  prefix: 'Admin',  moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
+  vendor: { id: 'vendor', label: 'Vendor Portal', prefix: 'Vendor', moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
 }
 
 export function pct(done, total) {
@@ -89,19 +76,45 @@ export const PCT_HEX = {
 }
 
 export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
-  const moduleOrder  = opts.moduleOrder  ?? MODULE_ORDER
   const moduleColors = opts.moduleColors ?? MODULE_COLORS
-  const moduleSet    = new Set(moduleOrder)
+  const prefix       = opts.surfacePrefix ?? null
+
+  // Determine this surface's ordered module list.
+  // Portals: derived live from Jira — every Epic whose summary starts with the
+  // surface prefix ("Admin"/"Vendor"), in Jira key order, prefix stripped for
+  // display. Mobile: the curated MODULE_ORDER (or an explicit opts.moduleOrder).
+  let moduleOrder
+  if (prefix) {
+    const seen = new Set()
+    moduleOrder = []
+    for (const flow of rawFlows) {
+      if (flow.fields?.issuetype?.name !== 'Epic') continue
+      const summary = flow.fields?.summary ?? ''
+      if (!matchesSurface(summary, prefix)) continue
+      const name = stripPortalPrefix(summary)
+      if (name && !seen.has(name)) { seen.add(name); moduleOrder.push(name) }
+    }
+  } else {
+    moduleOrder = opts.moduleOrder ?? MODULE_ORDER
+  }
+  const moduleSet = new Set(moduleOrder)
 
   // Build flowKey → module name from the Jira hierarchy (flow's parent epic).
   // This is authoritative — only flows whose parent epic belongs to THIS surface
   // get counted, so portal epics never leak into the mobile totals (or vice versa).
+  // Portal parent summaries are matched on prefix and stripped to the display name.
   const flowModuleMap = {}
   const phase2FlowKeys = new Set()
   for (const flow of rawFlows) {
     const parentSummary = flow.fields?.parent?.fields?.summary ?? ''
     if (/phase\s*2/i.test(parentSummary)) {
       phase2FlowKeys.add(flow.key)
+      continue
+    }
+    if (prefix) {
+      if (!matchesSurface(parentSummary, prefix)) continue
+      const name = stripPortalPrefix(parentSummary)
+      if (moduleSet.has(name)) flowModuleMap[flow.key] = name
     } else if (moduleSet.has(parentSummary)) {
       flowModuleMap[flow.key] = parentSummary
     }
@@ -125,6 +138,11 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
   const flowMap = {}
   let uxDone = 0, beDone = 0, intDone = 0, feDone = 0
   let uxTotal = 0, beTotal = 0, intTotal = 0, feTotal = 0
+
+  // Subtasks moved to Done within the last day — for the "since yesterday" recap.
+  // Scoped to this surface (the per-surface skip below runs before we collect).
+  const recentCutoff = Date.now() - 24 * 60 * 60 * 1000
+  const doneRecently = []
 
   for (const iss of subtasks) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
@@ -179,7 +197,24 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
       else if (disc === 'Integration') { m.inT++; if (isDone) m.inD++ }
       else if (disc === 'Frontend') { m.feT++; if (isDone) m.feD++ }
     }
+
+    // Collect anything completed in the last day for the recap panel.
+    if (isDone) {
+      const when = iss.fields.statuscategorychangedate ?? iss.fields.resolutiondate ?? null
+      if (when && new Date(when).getTime() >= recentCutoff) {
+        doneRecently.push({
+          key: iss.key,
+          discipline: disc,
+          flowKey: pk,
+          flowName: ps.replace(/^F-\d+\s*/, '').trim() || ps,
+          flowCode: (ps.match(/^(F-\d+)/) ?? [])[1] ?? '',
+          when,
+        })
+      }
+    }
   }
+
+  doneRecently.sort((a, b) => new Date(b.when) - new Date(a.when))
 
   // Count fully-done flows per module
   for (const flow of Object.values(flowMap)) {
@@ -216,6 +251,7 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
     modules: moduleOrder.map(n => modMap[n]).filter(Boolean),
     flows,
     doneWeek: filteredDoneWeek,
+    doneRecently,
     totalFlows,
   }
 }

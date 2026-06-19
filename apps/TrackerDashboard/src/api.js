@@ -46,8 +46,9 @@ const SUBTASK_FIELDS = [
   'assignee', 'statuscategorychangedate', 'resolutiondate', 'duedate',
 ]
 
-// Flow-level (parent) issues — fetched for their due dates
-const FLOW_FIELDS = ['summary', 'duedate', 'customfield_10015', 'status', 'components', 'parent']
+// Flow-level (parent) issues — fetched for their due dates.
+// `issuetype` lets us tell Epics (the modules) from Tasks (the flows).
+const FLOW_FIELDS = ['summary', 'duedate', 'customfield_10015', 'status', 'components', 'parent', 'issuetype']
 
 export async function fetchDashboardData(startDate) {
   const afterClause = startDate
