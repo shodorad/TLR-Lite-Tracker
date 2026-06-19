@@ -54,7 +54,7 @@ export default function PortalsDashboard({ datasets }) {
             >
               <span className="portal-tab-label">{t.label}</span>
               <span className="portal-tab-meta">
-                {d.modules.length} module{d.modules.length === 1 ? '' : 's'}
+                {d.modules.length} journey{d.modules.length === 1 ? '' : 's'}
                 {flows > 0 ? ` · ${flows} flows` : ''}
               </span>
             </button>
@@ -73,9 +73,9 @@ export default function PortalsDashboard({ datasets }) {
         <PortalSummary data={data} surface={surface} />
       </div>
 
-      <ModuleHealthChart key={`chart-${portal}`} modules={data.modules} title="Module Health" />
+      <ModuleHealthChart key={`chart-${portal}`} modules={data.modules} title="Journey Health" />
 
-      <StatusBriefingModules modules={data.modules} title="Module Breakdown" />
+      <StatusBriefingModules modules={data.modules} title="Journey Breakdown" />
 
       <div className="card flow-breakdown-card">
         <div className="card-header clickable" onClick={toggleFlowBreakdown}>
@@ -92,8 +92,8 @@ export default function PortalsDashboard({ datasets }) {
         </div>
         {!flowBreakdownCollapsed && (
           <div className="flow-breakdown-content">
-            <ModuleRollup modules={data.modules} noun="Module" />
-            <FlowDetail flows={data.flows} noun="Module" moduleColorMap={moduleColorMap} />
+            <ModuleRollup modules={data.modules} noun="Journey" />
+            <FlowDetail flows={data.flows} noun="Journey" moduleColorMap={moduleColorMap} />
           </div>
         )}
       </div>

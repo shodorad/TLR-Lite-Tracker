@@ -53,8 +53,8 @@ const PORTAL_COLORS = [
 // Surface registry — the source of truth for which epics belong to each page.
 // `prefix` is matched against Jira epic summaries to pull each portal's modules.
 export const SURFACES = {
-  admin:  { id: 'admin',  label: 'Admin Portal',  prefix: 'Admin',  moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
-  vendor: { id: 'vendor', label: 'Vendor Portal', prefix: 'Vendor', moduleColors: PORTAL_COLORS, journeyNoun: 'modules' },
+  admin:  { id: 'admin',  label: 'Admin Portal',  prefix: 'Admin',  moduleColors: PORTAL_COLORS, journeyNoun: 'journeys' },
+  vendor: { id: 'vendor', label: 'Vendor Portal', prefix: 'Vendor', moduleColors: PORTAL_COLORS, journeyNoun: 'journeys' },
 }
 
 export function pct(done, total) {
@@ -139,10 +139,12 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
   let uxDone = 0, beDone = 0, intDone = 0, feDone = 0
   let uxTotal = 0, beTotal = 0, intTotal = 0, feTotal = 0
 
-  // Subtasks moved to Done within the last day — for the "since yesterday" recap.
-  // Scoped to this surface (the per-surface skip below runs before we collect).
+  // Recap collections, both scoped to this surface (the per-surface skip below
+  // runs before we collect): subtasks moved to Done within the last day, and
+  // everything currently in progress.
   const recentCutoff = Date.now() - 24 * 60 * 60 * 1000
   const doneRecently = []
+  const inProgress = []
 
   for (const iss of subtasks) {
     const disc = (iss.fields.summary ?? '').trim()        // "UX" | "Backend" | "Integration"
@@ -198,19 +200,25 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
       else if (disc === 'Frontend') { m.feT++; if (isDone) m.feD++ }
     }
 
+    // Recap rows — shared shape for the "done"/"in progress" lists.
+    const recapRow = () => ({
+      key: iss.key,
+      discipline: disc,
+      flowKey: pk,
+      flowName: ps.replace(/^F-\d+\s*/, '').trim() || ps,
+      flowCode: (ps.match(/^(F-\d+)/) ?? [])[1] ?? '',
+      status: statusName,
+    })
+
     // Collect anything completed in the last day for the recap panel.
     if (isDone) {
       const when = iss.fields.statuscategorychangedate ?? iss.fields.resolutiondate ?? null
       if (when && new Date(when).getTime() >= recentCutoff) {
-        doneRecently.push({
-          key: iss.key,
-          discipline: disc,
-          flowKey: pk,
-          flowName: ps.replace(/^F-\d+\s*/, '').trim() || ps,
-          flowCode: (ps.match(/^(F-\d+)/) ?? [])[1] ?? '',
-          when,
-        })
+        doneRecently.push({ ...recapRow(), when })
       }
+    } else if (iss.fields.status?.statusCategory?.key === 'indeterminate') {
+      // Jira's "indeterminate" category = actively in progress.
+      inProgress.push(recapRow())
     }
   }
 
@@ -252,6 +260,7 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
     flows,
     doneWeek: filteredDoneWeek,
     doneRecently,
+    inProgress,
     totalFlows,
   }
 }
