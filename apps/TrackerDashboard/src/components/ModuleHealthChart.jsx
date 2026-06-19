@@ -1,26 +1,21 @@
 import { Bar } from 'react-chartjs-2'
 import { pct } from '../dataProcessor.js'
 
-const DISC_COLORS = {
-  ux:          { bg: 'rgba(61,158,82,.75)',    zero: 'rgba(61,158,82,.15)'   },
-  backend:     { bg: 'rgba(43,108,176,.75)',   zero: 'rgba(43,108,176,.15)'  },
-  integration: { bg: 'rgba(212,146,10,.75)',   zero: 'rgba(212,146,10,.15)'  },
-  frontend:    { bg: 'rgba(124,58,237,.75)',   zero: 'rgba(124,58,237,.15)'  },
-}
-
-// Per-discipline label colors (green / purple / blue / amber)
-const LABEL_COLORS = ['#267339', '#5B21B6', '#1A4F8A', '#8C5E00']
-
-// Which module fields to read per dataset index
-const DISC_FIELDS = [
-  { doneKey: 'uxD', totalKey: 'uxT' },
-  { doneKey: 'feD', totalKey: 'feT' },
-  { doneKey: 'beD', totalKey: 'beT' },
-  { doneKey: 'inD', totalKey: 'inT' },
+// One row per discipline — bar/zero fills, end-pill colors, and the module
+// fields each reads. Order is the display order of the bars.
+const DISC = [
+  { key: 'ux',  label: 'UX',          doneKey: 'uxD', totalKey: 'uxT', bar: 'rgba(61,158,82,.75)',  zero: 'rgba(61,158,82,.15)',  pillBg: 'rgba(61,158,82,.18)',  pillText: '#267339', badge: { className: 'badge-ux' } },
+  { key: 'fe',  label: 'Frontend',    doneKey: 'feD', totalKey: 'feT', bar: 'rgba(124,58,237,.75)', zero: 'rgba(124,58,237,.15)', pillBg: 'rgba(124,58,237,.18)', pillText: '#5B21B6', badge: { style: { background: 'rgba(124,58,237,.12)', color: '#5B21B6' } } },
+  { key: 'be',  label: 'Backend',     doneKey: 'beD', totalKey: 'beT', bar: 'rgba(43,108,176,.75)', zero: 'rgba(43,108,176,.15)', pillBg: 'rgba(43,108,176,.18)', pillText: '#1A4F8A', badge: { className: 'badge-be' } },
+  { key: 'int', label: 'Integration', doneKey: 'inD', totalKey: 'inT', bar: 'rgba(212,146,10,.75)', zero: 'rgba(212,146,10,.15)', pillBg: 'rgba(212,146,10,.18)', pillText: '#8C5E00', badge: { className: 'badge-int' } },
 ]
 
 export default function ModuleHealthChart({ modules, title = 'Journey Health' }) {
   const labels = modules.map(m => m.name)
+
+  // Data-driven: only chart disciplines that have subtasks on this surface
+  // (drops Frontend from the portals, keeps it on mobile).
+  const activeDisc = DISC.filter(d => modules.some(m => (m[d.totalKey] ?? 0) > 0))
 
   // Plugin A: y-axis 2-line labels (journey name + total flows done)
   const twoLineLabel = {
@@ -46,13 +41,6 @@ export default function ModuleHealthChart({ modules, title = 'Journey Health' })
   }
 
   // Plugin B: colored pill labels in fixed right column — one per bar
-  const PILL_STYLES = [
-    { bg: 'rgba(61,158,82,.18)',   text: '#267339' },   // UX — green
-    { bg: 'rgba(124,58,237,.18)',  text: '#5B21B6' },   // Frontend — purple
-    { bg: 'rgba(43,108,176,.18)',  text: '#1A4F8A' },   // Backend — blue
-    { bg: 'rgba(212,146,10,.18)',  text: '#8C5E00' },   // Integration — amber
-  ]
-
   function pillRoundRect(ctx, x, y, w, h, r) {
     ctx.beginPath()
     ctx.moveTo(x + r, y)
@@ -77,8 +65,7 @@ export default function ModuleHealthChart({ modules, title = 'Journey Health' })
       chart.data.datasets.forEach((_, di) => {
         const meta = chart.getDatasetMeta(di)
         if (meta.hidden) return
-        const { doneKey, totalKey } = DISC_FIELDS[di]
-        const { bg, text } = PILL_STYLES[di]
+        const { doneKey, totalKey, pillBg: bg, pillText: text } = activeDisc[di]
 
         meta.data.forEach((bar, i) => {
           const m = modules[i]
@@ -121,32 +108,12 @@ export default function ModuleHealthChart({ modules, title = 'Journey Health' })
 
   const data = {
     labels,
-    datasets: [
-      {
-        label: 'UX',
-        data: modules.map(m => pct(m.uxD, m.uxT)),
-        backgroundColor: modules.map(m => pct(m.uxD, m.uxT) === 0 ? DISC_COLORS.ux.zero : DISC_COLORS.ux.bg),
-        ...shared,
-      },
-      {
-        label: 'Frontend',
-        data: modules.map(m => pct(m.feD, m.feT)),
-        backgroundColor: modules.map(m => pct(m.feD, m.feT) === 0 ? DISC_COLORS.frontend.zero : DISC_COLORS.frontend.bg),
-        ...shared,
-      },
-      {
-        label: 'Backend',
-        data: modules.map(m => pct(m.beD, m.beT)),
-        backgroundColor: modules.map(m => pct(m.beD, m.beT) === 0 ? DISC_COLORS.backend.zero : DISC_COLORS.backend.bg),
-        ...shared,
-      },
-      {
-        label: 'Integration',
-        data: modules.map(m => pct(m.inD, m.inT)),
-        backgroundColor: modules.map(m => pct(m.inD, m.inT) === 0 ? DISC_COLORS.integration.zero : DISC_COLORS.integration.bg),
-        ...shared,
-      },
-    ],
+    datasets: activeDisc.map(d => ({
+      label: d.label,
+      data: modules.map(m => pct(m[d.doneKey], m[d.totalKey])),
+      backgroundColor: modules.map(m => pct(m[d.doneKey], m[d.totalKey]) === 0 ? d.zero : d.bar),
+      ...shared,
+    })),
   }
 
   const options = {
@@ -210,10 +177,11 @@ export default function ModuleHealthChart({ modules, title = 'Journey Health' })
           {title}
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
-          <span className="badge badge-ux">UX</span>
-          <span className="badge" style={{ background: 'rgba(124,58,237,.12)', color: '#5B21B6' }}>Frontend</span>
-          <span className="badge badge-be">Backend</span>
-          <span className="badge badge-int">Integration</span>
+          {activeDisc.map(d => (
+            <span key={d.key} className={`badge${d.badge.className ? ` ${d.badge.className}` : ''}`} style={d.badge.style}>
+              {d.label}
+            </span>
+          ))}
         </div>
       </div>
       <div style={{ padding: '16px 20px 22px' }}>

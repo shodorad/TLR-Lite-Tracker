@@ -1,30 +1,8 @@
-import { pct } from '../dataProcessor.js'
-
 // Build-readiness panel for the portals hero. Where the mobile dashboard tracks
-// a live weekly cadence, the portals are pre-build: the useful exec read is
-// "how far through the pipeline is this portal" — scoped, broken out, started.
+// a live weekly cadence, the portals are pre-build: the useful exec read is how
+// much is scoped/broken-out plus a recap of what was just completed.
 
-function StageIcon({ state }) {
-  if (state === 'done') {
-    return (
-      <span className="portal-stage-icon done" aria-hidden="true">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </span>
-    )
-  }
-  if (state === 'partial') {
-    return (
-      <span className="portal-stage-icon partial" aria-hidden="true">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </span>
-    )
-  }
-  return <span className="portal-stage-icon todo" aria-hidden="true" />
-}
+const DISC_CLASS = { UX: 'badge-ux', Backend: 'badge-be', Integration: 'badge-int', Frontend: 'badge-fe' }
 
 export default function PortalSummary({ data, surface }) {
   const s = data.stats
@@ -34,7 +12,6 @@ export default function PortalSummary({ data, surface }) {
   const subtaskTotal     = (s.uxTotal ?? 0) + (s.beTotal ?? 0) + (s.intTotal ?? 0) + (s.feTotal ?? 0)
   const subtaskDone      = (s.uxDone ?? 0) + (s.beDone ?? 0) + (s.intDone ?? 0) + (s.feDone ?? 0)
   const started          = subtaskDone > 0
-  const overallPct       = pct(subtaskDone, subtaskTotal)
 
   const hasFlows = flowCount > 0
 
@@ -47,30 +24,7 @@ export default function PortalSummary({ data, surface }) {
   const statusLabel = started ? 'In progress' : hasFlows ? 'Ready to start' : 'Scoping'
   const statusTone  = started ? 'prog' : 'todo'
 
-  const stages = [
-    {
-      label: 'Modules scoped',
-      detail: `${moduleCount} epic${moduleCount === 1 ? '' : 's'} defined`,
-      state: moduleCount > 0 ? 'done' : 'todo',
-    },
-    {
-      label: 'Flows broken out',
-      detail: hasFlows
-        ? `${modulesWithFlows} of ${moduleCount} modules · ${flowCount} flows`
-        : 'Not started',
-      state: modulesWithFlows === 0 ? 'todo' : modulesWithFlows === moduleCount ? 'done' : 'partial',
-    },
-    {
-      label: 'Subtasks assigned',
-      detail: subtaskTotal > 0 ? `${subtaskTotal} across UX · Backend · Integration` : 'Not started',
-      state: subtaskTotal > 0 ? 'done' : 'todo',
-    },
-    {
-      label: 'Engineering started',
-      detail: started ? `${overallPct}% complete` : 'Not started',
-      state: started ? (overallPct >= 100 ? 'done' : 'partial') : 'todo',
-    },
-  ]
+  const recent = data.doneRecently ?? []
 
   const figures = [
     { n: moduleCount,  label: moduleCount === 1 ? 'module' : 'modules' },
@@ -103,17 +57,26 @@ export default function PortalSummary({ data, surface }) {
           ))}
         </div>
 
-        <div className="portal-stages">
-          <div className="portal-stages-label">Pipeline</div>
-          {stages.map(st => (
-            <div className={`portal-stage ${st.state}`} key={st.label}>
-              <StageIcon state={st.state} />
-              <div className="portal-stage-text">
-                <span className="portal-stage-name">{st.label}</span>
-                <span className="portal-stage-detail">{st.detail}</span>
-              </div>
-            </div>
-          ))}
+        <div className="portal-recent">
+          <div className="portal-recent-head">
+            <span className="portal-recent-label">Issues completed since yesterday</span>
+            <span className="portal-recent-count">{recent.length}</span>
+          </div>
+          {recent.length === 0 ? (
+            <p className="portal-recent-empty">No issues completed in the last day.</p>
+          ) : (
+            <ul className="portal-recent-list">
+              {recent.map(r => (
+                <li className="portal-recent-item" key={r.key}>
+                  <span className={`badge ${DISC_CLASS[r.discipline] ?? 'badge-todo'}`}>{r.discipline}</span>
+                  <span className="portal-recent-name" title={r.flowName}>
+                    {r.flowCode ? `${r.flowCode} · ` : ''}{r.flowName}
+                  </span>
+                  <span className="portal-recent-key">{r.key}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>

@@ -263,18 +263,23 @@ function StreamCard({ stream, cadence, targeting, onViewDetails }) {
   )
 }
 
-function ModuleRow({ module, openKey, onToggle }) {
+// Per-module discipline fields for the breakdown table.
+const MOD_DISC = [
+  { key: 'ux',  label: 'UX',          doneKey: 'uxD', totalKey: 'uxT', fill: '#3D9E52' },
+  { key: 'fe',  label: 'Frontend',    doneKey: 'feD', totalKey: 'feT', fill: '#7C3AED' },
+  { key: 'be',  label: 'Backend',     doneKey: 'beD', totalKey: 'beT', fill: '#2B6CB0' },
+  { key: 'int', label: 'Integration', doneKey: 'inD', totalKey: 'inT', fill: '#D4920A' },
+]
+
+function ModuleRow({ module, disc, openKey, onToggle }) {
   const isOpen     = openKey === module.name
-  const totalDone  = module.uxD + module.feD + module.beD + module.inD
-  const totalItems = module.uxT + module.feT + module.beT + module.inT
+  const totalDone  = disc.reduce((sum, d) => sum + (module[d.doneKey] ?? 0), 0)
+  const totalItems = disc.reduce((sum, d) => sum + (module[d.totalKey] ?? 0), 0)
   const overall    = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0
 
-  const disciplines = [
-    { label: 'UX',          done: module.uxD, total: module.uxT, fill: '#3D9E52' },
-    { label: 'Frontend',    done: module.feD, total: module.feT, fill: '#7C3AED' },
-    { label: 'Backend',     done: module.beD, total: module.beT, fill: '#2B6CB0' },
-    { label: 'Integration', done: module.inD, total: module.inT, fill: '#D4920A' },
-  ]
+  const disciplines = disc.map(d => ({
+    label: d.label, done: module[d.doneKey] ?? 0, total: module[d.totalKey] ?? 0, fill: d.fill,
+  }))
 
   return (
     <div className={`briefing-accordion${isOpen ? ' open' : ''}`}>
@@ -438,6 +443,10 @@ export function StatusBriefingModules({ modules, title = 'Journey Health' }) {
 
   if (!modules?.length) return null
 
+  // Data-driven: only show disciplines with subtasks on this surface
+  // (Frontend drops off the portals, stays on mobile).
+  const activeDisc = MOD_DISC.filter(d => modules.some(m => (m[d.totalKey] ?? 0) > 0))
+
   function toggleModule(name) {
     setOpenModule(prev => prev === name ? null : name)
   }
@@ -466,7 +475,7 @@ export function StatusBriefingModules({ modules, title = 'Journey Health' }) {
         <div style={{ padding: '8px 20px 20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {modules.map(m => (
-              <ModuleRow key={m.name} module={m} openKey={openModule} onToggle={toggleModule} />
+              <ModuleRow key={m.name} module={m} disc={activeDisc} openKey={openModule} onToggle={toggleModule} />
             ))}
           </div>
         </div>

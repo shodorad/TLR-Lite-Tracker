@@ -9,10 +9,14 @@ const DISC = [
 ]
 
 export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 10, journeyNoun = 'journeys' }) {
-  const totalDone = DISC.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
+  // Data-driven: only show disciplines that actually have subtasks on this
+  // surface. Portals have no Frontend, so it drops off automatically; mobile
+  // (65 Frontend subtasks) keeps all four.
+  const disc = DISC.filter(d => (stats[d.totalKey] ?? 0) > 0)
+  const totalDone = disc.reduce((sum, d) => sum + (stats[d.doneKey] ?? 0), 0)
   // Sum of subtasks that actually exist per discipline — not totalFlows × 4,
   // which assumes every flow has all four disciplines.
-  const TOTAL_TASKS = DISC.reduce((sum, d) => sum + (stats[d.totalKey] ?? 0), 0)
+  const TOTAL_TASKS = disc.reduce((sum, d) => sum + (stats[d.totalKey] ?? 0), 0)
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
 
@@ -50,7 +54,7 @@ export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 
           </svg>
           Overall Progress
         </div>
-        <div style={{ fontSize: 12, color: 'var(--muted)' }}>4 disciplines · {totalFlows} flows</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)' }}>{disc.length} disciplines · {totalFlows} flows</div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'stretch', padding: '12px 16px', gap: 18, flex: 1, minHeight: 0 }}>
@@ -100,7 +104,7 @@ export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 
             </span>
 
             <div style={{ height: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(0,0,0,.07)', display: 'flex', marginTop: 6 }}>
-              {DISC.map(d => {
+              {disc.map(d => {
                 const seg = pct(stats[d.doneKey], TOTAL_TASKS)
                 return (
                   <div key={d.key} style={{
@@ -114,7 +118,7 @@ export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 
 
           {/* Bottom: discipline breakdown */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {DISC.map(d => {
+            {disc.map(d => {
               const p = pct(stats[d.doneKey], stats[d.totalKey])
               return (
                 <div key={d.key} style={{ background: d.bg, borderRadius: 8, padding: '7px 10px' }}>
