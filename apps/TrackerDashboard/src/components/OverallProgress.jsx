@@ -8,6 +8,18 @@ const DISC = [
   { key: 'int', label: 'Integration', doneKey: 'intDone', totalKey: 'intTotal', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
 ]
 
+// Target release date. Single source of truth — the label and the countdown are both
+// derived from it. There is no Jira release/version for TLN to fetch this from, so it
+// lives here as a constant; change this one line to move the release.
+const RELEASE_DATE  = new Date('2026-07-30T00:00:00')
+const RELEASE_LABEL = RELEASE_DATE.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+
+function daysToRelease() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.max(0, Math.ceil((RELEASE_DATE - today) / 86_400_000))
+}
+
 export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 0, journeyNoun = 'journeys' }) {
   // Data-driven: only show disciplines that actually have subtasks on this
   // surface. Portals have no Frontend, so it drops off automatically; mobile
@@ -19,6 +31,7 @@ export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 
   const TOTAL_TASKS = disc.reduce((sum, d) => sum + (stats[d.totalKey] ?? 0), 0)
   const totalPct  = pct(totalDone, TOTAL_TASKS)
   const remaining = TOTAL_TASKS - totalDone
+  const days      = daysToRelease()
 
   // 0% reads as "not started" (neutral), not "blocked" (red) — DESIGN.md status rule.
   const gaugeColor = totalPct === 0 ? '#CCCCCC' : totalPct > 75 ? '#3D9E52' : totalPct >= 25 ? '#D4920A' : '#E05252'
@@ -138,6 +151,26 @@ export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 
 
         </div>
 
+      </div>
+
+      {/* Release countdown — date + days remaining, both derived from RELEASE_DATE */}
+      <div style={{ display: 'flex', gap: 8, padding: '0 16px 14px' }}>
+        <div style={{ flex: 1, background: 'rgba(124,58,237,.08)', borderRadius: 8, padding: '9px 12px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#5B21B6', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>
+            Release Due Date
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#5B21B6', lineHeight: 1, letterSpacing: '-.02em' }}>
+            {RELEASE_LABEL}
+          </div>
+        </div>
+        <div style={{ flex: 1, background: 'rgba(124,58,237,.08)', borderRadius: 8, padding: '9px 12px' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#5B21B6', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>
+            Days Till Release
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#7c3aed', lineHeight: 1, letterSpacing: '-.02em', fontVariantNumeric: 'tabular-nums' }}>
+            {days}
+          </div>
+        </div>
       </div>
     </div>
   )

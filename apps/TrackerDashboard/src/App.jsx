@@ -8,7 +8,6 @@ import ModuleRollup from './components/ModuleRollup.jsx'
 import FlowDetail from './components/FlowDetail.jsx'
 import ModuleHealthChart from './components/ModuleHealthChart.jsx'
 import OverallProgress from './components/OverallProgress.jsx'
-import DemoReadiness from './components/DemoReadiness.jsx'
 import StatusBriefing, { StatusBriefingModules } from './components/StatusBriefing.jsx'
 import FeatureComparison from './components/FeatureComparison.jsx'
 import PortalsDashboard from './components/PortalsDashboard.jsx'
@@ -140,7 +139,6 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
             <div className="hero-three">
               <div className="hero-stacked-pair">
                 <OverallProgress stats={data.stats} totalFlows={data.totalFlows} journeyCount={data.modules.length} />
-                <DemoReadiness stats={data.stats} flows={data.flows} modules={data.modules} rawFlows={rawFlows} totalFlows={data.totalFlows} />
               </div>
               <StatusBriefing stats={data.stats} />
             </div> {/* end .hero-three */}

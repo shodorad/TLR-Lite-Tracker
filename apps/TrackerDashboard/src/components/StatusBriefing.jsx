@@ -45,25 +45,33 @@ const PILL_TONE = {
   neutral: { bg: 'rgba(0,0,0,.05)',     color: 'var(--muted)', dot: '#B0B0B0' },
 }
 
-// Due-date status for a discipline, built from each subtask's own due date.
-// Open subtasks only (a finished task is never overdue / due today). Parts are
-// rendered in urgency order and the pill takes the colour of the most urgent one.
+// Formats a Jira "YYYY-MM-DD" due date as "15 Jul" (no timezone shift).
+function formatDue(ymd) {
+  return new Date(`${ymd}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+// Due-date pill for a discipline. Shows the NEAREST open due date — overdue dates
+// in red, today in amber, upcoming in neutral — and "No due date present" when none
+// of the open subtasks carry a date. "All done" when nothing is open.
 function DuePill({ counts }) {
-  const { overdue = 0, today = 0, upcoming = 0, noDate = 0 } = counts ?? {}
+  const { overdue = 0, today = 0, upcoming = 0, noDate = 0, nearest = null } = counts ?? {}
   const open = overdue + today + upcoming + noDate
 
-  const parts = []
-  if (overdue)  parts.push(`${overdue} overdue`)
-  if (today)    parts.push(`${today} due today`)
-  if (upcoming) parts.push(`${upcoming} upcoming`)
-  if (noDate)   parts.push(`${noDate} no due date`)
-
-  const tone = open === 0 ? 'green'
-    : overdue ? 'red'
-    : today ? 'amber'
-    : 'neutral'
+  // `nearest` is the min open due date, so the bucket counts classify it directly:
+  // any overdue → it's overdue; else any today → it's today; else it's upcoming.
+  let tone, label
+  if (open === 0) {
+    tone = 'green';   label = 'All done'
+  } else if (!nearest) {
+    tone = 'neutral'; label = 'No due date present'
+  } else if (overdue) {
+    tone = 'red';     label = `Overdue ${formatDue(nearest)}`
+  } else if (today) {
+    tone = 'amber';   label = 'Due today'
+  } else {
+    tone = 'neutral'; label = `Due ${formatDue(nearest)}`
+  }
   const s = PILL_TONE[tone]
-  const label = open === 0 ? 'All done' : parts.join(' · ')
 
   return (
     <span style={{

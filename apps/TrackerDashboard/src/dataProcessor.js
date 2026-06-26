@@ -170,11 +170,14 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
   const now = new Date()
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const DISC_DUE_KEY = { UX: 'ux', Frontend: 'frontend', Backend: 'backend', Integration: 'integration' }
+  // `nearest` = the earliest due date among this discipline's OPEN subtasks
+  // ("YYYY-MM-DD", or null when none of them carry a due date). Drives the
+  // discipline card's pill, which shows the next deadline rather than a tally.
   const due = {
-    ux:          { overdue: 0, today: 0, upcoming: 0, noDate: 0 },
-    frontend:    { overdue: 0, today: 0, upcoming: 0, noDate: 0 },
-    backend:     { overdue: 0, today: 0, upcoming: 0, noDate: 0 },
-    integration: { overdue: 0, today: 0, upcoming: 0, noDate: 0 },
+    ux:          { overdue: 0, today: 0, upcoming: 0, noDate: 0, nearest: null },
+    frontend:    { overdue: 0, today: 0, upcoming: 0, noDate: 0, nearest: null },
+    backend:     { overdue: 0, today: 0, upcoming: 0, noDate: 0, nearest: null },
+    integration: { overdue: 0, today: 0, upcoming: 0, noDate: 0, nearest: null },
   }
 
   // Recap collections, both scoped to this surface (the per-surface skip below
@@ -242,6 +245,8 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
           : dd === todayStr ? 'today'
           : 'upcoming'
         due[dk][bucket]++
+        // Track the soonest open due date ("YYYY-MM-DD" sorts chronologically).
+        if (dd && (due[dk].nearest === null || dd < due[dk].nearest)) due[dk].nearest = dd
       }
     }
 
