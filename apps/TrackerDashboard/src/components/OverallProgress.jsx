@@ -8,7 +8,7 @@ const DISC = [
   { key: 'int', label: 'Integration', doneKey: 'intDone', totalKey: 'intTotal', color: '#D4920A', bg: 'rgba(212,146,10,0.11)',  fg: '#8C5E00' },
 ]
 
-export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 10, journeyNoun = 'journeys' }) {
+export default function OverallProgress({ stats, totalFlows = 0, journeyCount = 0, journeyNoun = 'journeys' }) {
   // Data-driven: only show disciplines that actually have subtasks on this
   // surface. Portals have no Frontend, so it drops off automatically; mobile
   // (65 Frontend subtasks) keeps all four.

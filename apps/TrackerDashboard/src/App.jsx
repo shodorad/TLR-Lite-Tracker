@@ -139,19 +139,10 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
             {/* Hero row — 2 columns: stacked pair (overall + demo) · cadence */}
             <div className="hero-three">
               <div className="hero-stacked-pair">
-                <OverallProgress stats={data.stats} totalFlows={data.totalFlows} />
+                <OverallProgress stats={data.stats} totalFlows={data.totalFlows} journeyCount={data.modules.length} />
                 <DemoReadiness stats={data.stats} flows={data.flows} modules={data.modules} rawFlows={rawFlows} totalFlows={data.totalFlows} />
               </div>
-              <StatusBriefing
-                stats={data.stats}
-                modules={data.modules}
-                subtasks={rawSubtasks}
-                doneWeek={data.doneWeek}
-                flows={data.flows}
-                rawFlows={rawFlows}
-                dateRange={dateRange}
-                totalFlows={data.totalFlows}
-              />
+              <StatusBriefing stats={data.stats} />
             </div> {/* end .hero-three */}
 
             {/* Journey Health chart — full width, below summary */}
@@ -177,7 +168,7 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
               {!flowBreakdownCollapsed && (
                 <div className="flow-breakdown-content">
                   <ModuleRollup modules={data.modules} />
-                  <FlowDetail flows={data.flows} />
+                  <FlowDetail flows={data.flows} moduleColorMap={Object.fromEntries(data.modules.map(m => [m.name, m.color]))} />
                 </div>
               )}
             </div>

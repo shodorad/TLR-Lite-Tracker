@@ -1,19 +1,11 @@
 import { useState } from 'react'
-import { pct as calcPct, MODULE_ORDER } from '../dataProcessor.js'
-
-const MODULE_ORDER_SET = new Set(MODULE_ORDER)
+import { pct as calcPct } from '../dataProcessor.js'
 
 const STREAMS = [
-  { key: 'ux',          label: 'UX Design',   discField: 'UX',          flowKey: 'ux',          doneKey: 'uxDone',  totalKey: 'uxTotal',  fill: '#3D9E52', dot: '#3D9E52' },
-  { key: 'frontend',    label: 'Frontend',     discField: 'Frontend',    flowKey: 'frontend',     doneKey: 'feDone',  totalKey: 'feTotal',  fill: '#7C3AED', dot: '#7C3AED' },
-  { key: 'backend',     label: 'Backend',      discField: 'Backend',     flowKey: 'backend',      doneKey: 'beDone',  totalKey: 'beTotal',  fill: '#2B6CB0', dot: '#2B6CB0' },
-  { key: 'integration', label: 'Integration',  discField: 'Integration', flowKey: 'integration',  doneKey: 'intDone', totalKey: 'intTotal', fill: '#D4920A', dot: '#D4920A' },
-]
-
-const CADENCES = [
-  { key: 'targeting', label: 'Mon — Targeting' },
-  { key: 'midweek',   label: 'Wed — Mid-week'  },
-  { key: 'recap',     label: 'Fri — Recap'     },
+  { key: 'ux',          label: 'UX Design',   discField: 'UX',          flowKey: 'ux',          doneKey: 'uxDone',  totalKey: 'uxTotal',  progKey: 'uxProg',  blockedKey: 'uxBlocked',  fill: '#3D9E52', dot: '#3D9E52' },
+  { key: 'frontend',    label: 'Frontend',     discField: 'Frontend',    flowKey: 'frontend',     doneKey: 'feDone',  totalKey: 'feTotal',  progKey: 'feProg',  blockedKey: 'feBlocked',  fill: '#7C3AED', dot: '#7C3AED' },
+  { key: 'backend',     label: 'Backend',      discField: 'Backend',     flowKey: 'backend',      doneKey: 'beDone',  totalKey: 'beTotal',  progKey: 'beProg',  blockedKey: 'beBlocked',  fill: '#2B6CB0', dot: '#2B6CB0' },
+  { key: 'integration', label: 'Integration',  discField: 'Integration', flowKey: 'integration',  doneKey: 'intDone', totalKey: 'intTotal', progKey: 'intProg', blockedKey: 'intBlocked', fill: '#D4920A', dot: '#D4920A' },
 ]
 
 // ── Date helpers ─────────────────────────────────────────────────────────────
@@ -28,141 +20,51 @@ function thisWeekBounds() {
   return { mon, fri }
 }
 
-function isThisWeek(dateStr) {
-  if (!dateStr) return false
-  const d = new Date(dateStr)
-  const { mon, fri } = thisWeekBounds()
-  return d >= mon && d <= fri
-}
 
-// Build a map of flow key → duedate.
-// Checks due dates on the flow issue itself first, then falls back to
-// due dates set on any of the flow's subtasks.
-function buildFlowDateMap(rawFlows, subtasks) {
-  const map = {}
-  for (const f of (rawFlows ?? [])) {
-    const due   = f.fields?.duedate ?? null
-    const start = f.fields?.customfield_10015 ?? null
-    if (due || start) map[f.key] = { due, start }
-  }
-  // If a subtask has a due date, bubble it up to the parent flow
-  for (const s of (subtasks ?? [])) {
-    const due = s.fields?.duedate ?? null
-    if (!due) continue
-    const pk = s.fields?.parent?.key
-    if (pk && !map[pk]) map[pk] = { due, start: null }
-  }
-  return map
-}
+const EMPTY_DUE = { overdue: 0, today: 0, upcoming: 0, noDate: 0 }
 
-// Flows (processed) that have a due date falling within the current week
-function getTargetedFlows(flows, flowDateMap) {
-  return (flows ?? []).filter(f => isThisWeek(flowDateMap[f.key]?.due))
-}
-
-// Per-stream targeting counts from this week's targeted flows
-function targetingCounts(targetedFlows, flowKey) {
-  const DONE_RE = /done|closed|resolved|complet/i
-  let done = 0, remaining = 0
-  for (const f of targetedFlows) {
-    const status = f[flowKey] ?? ''  // e.g. f.ux = 'Done'
-    if (DONE_RE.test(status)) done++
-    else remaining++
-  }
-  return { done, remaining, total: targetedFlows.length }
-}
-
-// ── Overall stream metrics (mid-week / recap) ─────────────────────────────
-// module name → due date string
-function getModuleDueDates(rawFlows) {
-  const map = {}
-  for (const f of (rawFlows ?? [])) {
-    const summary = (f.fields?.summary ?? '').trim()
-    const due = f.fields?.duedate ?? null
-    if (due && MODULE_ORDER_SET.has(summary)) map[summary] = due
-  }
-  return map
-}
-
-// Per-stream: which module fields hold done/total counts
-const STREAM_MOD_KEYS = {
-  ux:          { done: 'uxD', total: 'uxT' },
-  frontend:    { done: 'feD', total: 'feT' },
-  backend:     { done: 'beD', total: 'beT' },
-  integration: { done: 'inD', total: 'inT' },
-}
-
-function healthFor(p, streamKey, modules, moduleDueDates) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const keys = STREAM_MOD_KEYS[streamKey]
-  let flowsBehind = 0
-
-  for (const mod of (modules ?? [])) {
-    const due = moduleDueDates[mod.name]
-    if (!due) continue
-    const dueDate = new Date(due)
-    dueDate.setHours(0, 0, 0, 0)
-    if (today <= dueDate) continue
-    const done  = mod[keys.done]  ?? 0
-    const total = mod[keys.total] ?? 0
-    if (total === 0) continue
-    flowsBehind += Math.max(0, total - done)
-  }
-
-  if (flowsBehind > 0) return { status: 'red', label: `${flowsBehind} flow${flowsBehind !== 1 ? 's' : ''} behind` }
-  return { status: 'green', label: 'On track' }
-}
-
-function countStatus(subtasks, discField, match) {
-  return (subtasks ?? []).filter(iss => {
-    const disc = (iss.fields?.summary ?? '').trim()
-    const s    = (iss.fields?.status?.name ?? '').toLowerCase()
-    return disc === discField && match(s)
-  }).length
-}
-
-function buildStreams(stats, subtasks, rawFlows, modules) {
-  const moduleDueDates = getModuleDueDates(rawFlows)
+function buildStreams(stats) {
   return STREAMS.map(s => {
     const done       = stats[s.doneKey] ?? 0
     const total      = stats[s.totalKey] ?? 0
     const p          = calcPct(done, total)
-    const { status: health, label: healthLabel } = healthFor(p, s.key, modules, moduleDueDates)
-    const inProgress = countStatus(subtasks, s.discField, st => st.includes('progress'))
-    const blocked    = countStatus(subtasks, s.discField, st => st.includes('block'))
+    // In-progress / blocked / due-date status all come from the same surface-scoped
+    // pass as done/total, so nothing leaks in from portals or Phase 2.
+    const inProgress = stats[s.progKey] ?? 0
+    const blocked    = stats[s.blockedKey] ?? 0
     const notStarted = Math.max(0, total - done - inProgress - blocked)
-    return { ...s, done, total, pct: p, health, healthLabel, inProgress, blocked, notStarted }
+    const due        = stats.due?.[s.key] ?? EMPTY_DUE
+    return { ...s, done, total, pct: p, inProgress, blocked, notStarted, due }
   })
 }
 
-// ── Narratives ───────────────────────────────────────────────────────────────
-function narrative(stream, cadence, targeting) {
-  const { label, pct, done, total } = stream
-  if (cadence === 'targeting') {
-    const t = targeting
-    if (t.total === 0) return `No ${label} flows have a due date set for this week. Set due dates on flow issues to enable targeting.`
-    const pace = t.remaining === 0 ? 'All on track.' : `${t.remaining} flow${t.remaining > 1 ? 's' : ''} still need${t.remaining === 1 ? 's' : ''} ${label} work.`
-    return `${t.total} flow${t.total > 1 ? 's' : ''} due this week. ${t.done} already shipped. ${pace}`
-  }
-  if (cadence === 'midweek') {
-    if (pct >= 75) return 'On pace for a strong close.'
-    if (pct >= 45) return 'Some risk; tracking daily.'
-    if (pct >= 25) return `${total - done} tasks outstanding. Consistent daily progress needed.`
-    return `Only ${pct}% complete. Risk escalation warranted.`
-  }
-  const remaining = total - done
-  if (remaining === 0) return 'Full week delivered.'
-  return `${remaining} task${remaining > 1 ? 's' : ''} carried to next week.`
+const PILL_TONE = {
+  green:   { bg: 'rgba(61,158,82,.1)',  color: '#267339', dot: '#3D9E52' },
+  amber:   { bg: 'rgba(212,146,10,.1)', color: '#8C5E00', dot: '#D4920A' },
+  red:     { bg: 'rgba(224,82,82,.1)',  color: '#B83030', dot: '#E05252' },
+  neutral: { bg: 'rgba(0,0,0,.05)',     color: 'var(--muted)', dot: '#B0B0B0' },
 }
 
-function HealthPill({ status, label }) {
-  const map = {
-    green: { bg: 'rgba(61,158,82,.1)',    color: '#267339', dot: '#3D9E52' },
-    amber: { bg: 'rgba(212,146,10,.1)',   color: '#8C5E00', dot: '#D4920A' },
-    red:   { bg: 'rgba(224,82,82,.1)',    color: '#B83030', dot: '#E05252' },
-  }
-  const s = map[status]
+// Due-date status for a discipline, built from each subtask's own due date.
+// Open subtasks only (a finished task is never overdue / due today). Parts are
+// rendered in urgency order and the pill takes the colour of the most urgent one.
+function DuePill({ counts }) {
+  const { overdue = 0, today = 0, upcoming = 0, noDate = 0 } = counts ?? {}
+  const open = overdue + today + upcoming + noDate
+
+  const parts = []
+  if (overdue)  parts.push(`${overdue} overdue`)
+  if (today)    parts.push(`${today} due today`)
+  if (upcoming) parts.push(`${upcoming} upcoming`)
+  if (noDate)   parts.push(`${noDate} no due date`)
+
+  const tone = open === 0 ? 'green'
+    : overdue ? 'red'
+    : today ? 'amber'
+    : 'neutral'
+  const s = PILL_TONE[tone]
+  const label = open === 0 ? 'All done' : parts.join(' · ')
+
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -194,44 +96,15 @@ function MetricParts({ done, inProgress, blocked, notStarted }) {
   )
 }
 
-function Metric({ stream, cadence, targeting }) {
+function Metric({ stream }) {
   const { pct, done, total, inProgress, blocked, notStarted, fill } = stream
-
-  if (cadence === 'targeting') {
-    const t = targeting
-    const targetPct = t.total > 0 ? Math.round((t.done / t.total) * 100) : 0
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-          <span className="briefing-meta-label">Due this week</span>
-          <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1 }}>
-            {t.total === 0 ? '—' : `${t.total} flow${t.total > 1 ? 's' : ''}`}
-          </span>
-        </div>
-        {t.total > 0 && (
-          <>
-            <div style={{ height: 5, background: 'rgba(0,0,0,.07)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${targetPct}%`, background: fill, borderRadius: 3, transition: 'width 0.4s ease' }} />
-            </div>
-            <div style={{ display: 'flex', gap: 14, fontSize: 12 }}>
-              <span style={{ color: '#267339', fontWeight: 600 }}>{t.done} shipped</span>
-              <span style={{ color: '#999999' }}>·</span>
-              <span style={{ color: t.remaining > 0 ? '#8C5E00' : '#999999', fontWeight: t.remaining > 0 ? 600 : 400 }}>
-                {t.remaining} remaining
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: fill }}>{pct}%</div>
         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--muted)' }}>
-          {cadence === 'recap' ? 'final this week' : `of ${total} subtasks`}
+          of {total} subtasks
         </div>
       </div>
       <div style={{ height: 7, background: 'rgba(0,0,0,.07)', borderRadius: 3, overflow: 'hidden' }}>
@@ -242,19 +115,16 @@ function Metric({ stream, cadence, targeting }) {
   )
 }
 
-function StreamCard({ stream, cadence, targeting, onViewDetails }) {
+function StreamCard({ stream, onViewDetails }) {
   return (
     <div className="briefing-stream-card">
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 700, fontSize: 15.5, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
         <span style={{ width: 10, height: 10, borderRadius: '50%', background: stream.dot, flexShrink: 0 }} />
         <span>{stream.label}</span>
-        <HealthPill status={stream.health} label={stream.healthLabel} />
+        <DuePill counts={stream.due} />
       </div>
-      <Metric stream={stream} cadence={cadence} targeting={targeting} />
-      <p style={{ color: 'var(--text)', fontSize: 13.5, lineHeight: 1.6, flex: 1 }}>
-        {narrative(stream, cadence, targeting)}
-      </p>
-      <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
+      <Metric stream={stream} />
+      <div style={{ marginTop: 'auto', paddingTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
         <button className="briefing-view-btn" onClick={() => onViewDetails(stream.key)}>
           View details
         </button>
@@ -352,19 +222,11 @@ function ModuleRow({ module, disc, openKey, onToggle }) {
   )
 }
 
-// ── Cadence + stream cards (goes in the right column) ────────────────────────
-export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlows, dateRange, totalFlows = 0 }) {
-  const [cadence, setCadence] = useState('midweek')
+// ── Stream cards (goes in the right column) ──────────────────────────────────
+export default function StatusBriefing({ stats }) {
+  if (!stats) return null
 
-  if (!stats || !modules) return null
-
-  const streams       = buildStreams(stats, subtasks, rawFlows, modules)
-  const flowDateMap   = buildFlowDateMap(rawFlows, subtasks)
-  const targetedFlows = getTargetedFlows(flows, flowDateMap)
-  const targetingMap = {}
-  for (const s of STREAMS) {
-    targetingMap[s.key] = targetingCounts(targetedFlows, s.flowKey)
-  }
+  const streams = buildStreams(stats)
 
   const { mon, fri } = thisWeekBounds()
   const weekLabel = `${mon.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${fri.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
@@ -378,23 +240,8 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
     <div className="card" style={{ height: '100%' }}>
       {/* Controls */}
       <div className="briefing-controls">
-        <div className="briefing-segmented">
-          {CADENCES.map(opt => (
-            <button
-              key={opt.key}
-              className={`briefing-seg-btn${cadence === opt.key ? ' active' : ''}`}
-              onClick={() => setCadence(opt.key)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--quiet)' }}>
-          {cadence === 'targeting'
-            ? <><strong style={{ color: 'var(--ink)' }}>Week of {weekLabel}</strong> · {targetedFlows.length} flow{targetedFlows.length !== 1 ? 's' : ''} due</>
-            : weekLabel
-          }
-        </div>
+        <span className="card-title">This Week</span>
+        <div style={{ fontSize: 12, color: 'var(--quiet)' }}>{weekLabel}</div>
       </div>
 
       {/* Stream cards */}
@@ -403,8 +250,6 @@ export default function StatusBriefing({ stats, modules, subtasks, flows, rawFlo
           <StreamCard
             key={s.key}
             stream={s}
-            cadence={cadence}
-            targeting={targetingMap[s.key]}
             onViewDetails={handleViewDetails}
           />
         ))}

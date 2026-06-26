@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { pct, colorForPct, MODULE_ORDER, MODULE_COLORS } from '../dataProcessor.js'
+import { pct, colorForPct } from '../dataProcessor.js'
 
 const STATUS_BADGE = {
   done:         <span className="badge badge-done">Done</span>,
@@ -120,9 +120,7 @@ export default function FlowDetail({ flows, noun = 'Journey', moduleColorMap = n
               </thead>
               <tbody>
                 {shown.map(f => {
-                  const mIdx = MODULE_ORDER.indexOf(f.module)
-                  const dotColor = moduleColorMap?.[f.module]
-                    ?? (mIdx >= 0 ? MODULE_COLORS[mIdx] : '#94A3B8')
+                  const dotColor = moduleColorMap?.[f.module] ?? '#94A3B8'
                   const doneN = [f.ux, f.backend, f.integration].filter(s => s === 'Done').length
                   const flowName = f.name.replace(/^F-\d+\s*/, '')
                   return (

@@ -1,14 +1,6 @@
 import { Doughnut } from 'react-chartjs-2'
 import { pct } from '../dataProcessor.js'
 
-const DEMO_DATE = new Date('2026-05-31T00:00:00')
-
-function daysToDemo() {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return Math.max(0, Math.ceil((DEMO_DATE - today) / 86_400_000))
-}
-
 const KPI_S = {
   label: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 4, whiteSpace: 'nowrap' },
   num:   { lineHeight: 1, letterSpacing: '-.04em', fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' },
@@ -45,7 +37,6 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFl
   const demoPct  = pct(demoDone, TOTAL_DEMO)
   const uxPct    = pct(uxDone, uxTotal)
   const fePct    = pct(feDone, feTotal)
-  const days     = daysToDemo()
 
   const atRisk = flowsBehindForDemo(modules, rawFlows)
 
@@ -75,7 +66,7 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFl
           </svg>
           Client Demo
         </div>
-        <div className="demo-panel-sub">UX + Frontend · End of May</div>
+        <div className="demo-panel-sub">UX + Frontend</div>
       </div>
 
       {/* Content: 2×2 KPI grid (left) | full donut (right) */}
@@ -84,14 +75,8 @@ export default function DemoReadiness({ stats, flows, modules, rawFlows, totalFl
         {/* Left: 2×2 KPI grid — top row primary (days/risk), bottom row discipline */}
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 8 }}>
 
-          {/* Days Left */}
-          <div style={{ ...KPI_S.tile, background: 'rgba(124,58,237,.08)' }}>
-            <div style={{ ...KPI_S.label, color: '#5B21B6' }}>Days Left</div>
-            <div style={{ ...KPI_S.num, fontSize: 30, fontWeight: 800, color: '#7c3aed' }}>{days}</div>
-          </div>
-
-          {/* At Risk */}
-          <div style={{ ...KPI_S.tile, background: 'rgba(224,82,82,.08)' }}>
+          {/* At Risk — spans the full top row now that Days Left is gone */}
+          <div style={{ ...KPI_S.tile, gridColumn: '1 / -1', background: 'rgba(224,82,82,.08)' }}>
             <div style={{ ...KPI_S.label, color: '#B83030' }}>At Risk</div>
             <div style={{ ...KPI_S.num, fontSize: 30, fontWeight: 800, color: '#E05252' }}>{atRisk}</div>
           </div>
