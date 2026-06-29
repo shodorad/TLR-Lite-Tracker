@@ -1,26 +1,42 @@
 import { pct } from '../dataProcessor.js'
 
-// Discipline config — mirrors OverallProgress, but reads the per-module field names
-// (uxD/uxT …) the dataProcessor writes onto each journey bucket.
-const DISC = [
-  { key: 'ux',  label: 'UX',          doneKey: 'uxD', totalKey: 'uxT', color: '#3D9E52', bg: 'rgba(61,158,82,0.11)',  fg: '#267339' },
-  { key: 'fe',  label: 'Frontend',    doneKey: 'feD', totalKey: 'feT', color: '#7C3AED', bg: 'rgba(124,58,237,0.11)', fg: '#5B21B6' },
-  { key: 'be',  label: 'Backend',     doneKey: 'beD', totalKey: 'beT', color: '#2B6CB0', bg: 'rgba(43,108,176,0.11)', fg: '#1A4F8A' },
-  { key: 'int', label: 'Integration', doneKey: 'inD', totalKey: 'inT', color: '#D4920A', bg: 'rgba(212,146,10,0.11)', fg: '#8C5E00' },
+// Each Global-Refinements flow can carry up to four discipline subtasks. We read
+// their per-flow status only to roll a flow up into a single line item with one
+// status — the disciplines are no longer surfaced as separate cards.
+const DISC_FIELDS = [
+  { statusKey: 'ux',          doneKey: 'uxDone' },
+  { statusKey: 'frontend',    doneKey: 'feDone' },
+  { statusKey: 'backend',     doneKey: 'beDone' },
+  { statusKey: 'integration', doneKey: 'intDone' },
 ]
+
+const STATE_LABEL = { done: 'Done', prog: 'In Progress', todo: 'To Do' }
+const STATE_CLASS = { done: 'badge-done', prog: 'badge-prog', todo: 'badge-todo' }
+
+// Collapse a flow's discipline subtasks into one status + a done/total count.
+function rollup(flow) {
+  const present = DISC_FIELDS.filter(d => flow[d.statusKey] != null)
+  const total   = present.length
+  const done    = present.filter(d => flow[d.doneKey]).length
+  const anyProg = present.some(d => (flow[d.statusKey] ?? '').toLowerCase().includes('progress'))
+  let state = 'todo'
+  if (total > 0 && done === total) state = 'done'
+  else if (anyProg || done > 0)    state = 'prog'
+  return { total, done, state }
+}
 
 // Standalone widget for the "Global Refinements" journey — pulled out of Journey
 // Health so the cross-cutting polish work reads on its own rather than skewing the
 // per-journey chart. Renders nothing when the epic isn't present on this surface.
-export default function GlobalRefinements({ module }) {
+export default function GlobalRefinements({ module, flows = [] }) {
   if (!module) return null
 
-  // Only show disciplines that actually carry subtasks (data-driven, like OverallProgress).
-  const disc       = DISC.filter(d => (module[d.totalKey] ?? 0) > 0)
-  const totalDone  = disc.reduce((sum, d) => sum + (module[d.doneKey] ?? 0), 0)
-  const totalTasks = disc.reduce((sum, d) => sum + (module[d.totalKey] ?? 0), 0)
-  const overall    = pct(totalDone, totalTasks)
-  const flowTotal  = module.flowKeys?.size ?? 0
+  // Progress is measured by flow tickets, not the underlying discipline subtasks:
+  // a flow counts as done only when every discipline subtask it carries is done.
+  const flowTotal = flows.length
+  const flowsDone = flows.filter(f => rollup(f).state === 'done').length
+  const overall   = pct(flowsDone, flowTotal)
+  const remaining = flowTotal - flowsDone
 
   return (
     <div className="card">
@@ -33,50 +49,54 @@ export default function GlobalRefinements({ module }) {
           {module.name}
         </span>
         <span className="badge badge-done" style={{ fontSize: 11, padding: '4px 12px', fontWeight: 600 }}>
-          {totalDone} / {totalTasks} done
+          {flowsDone} / {flowTotal} done
         </span>
       </div>
 
       <div style={{ padding: '14px 20px 20px' }}>
-        {/* Overview row: headline % + context, then a segmented overall bar */}
+        {/* Overview row: headline % + context, then a single overall progress bar */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
           <span style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-.04em', lineHeight: 1, color: '#111', fontVariantNumeric: 'tabular-nums' }}>
             {overall}%
           </span>
           <span style={{ fontSize: 13, color: 'var(--muted)', fontWeight: 500 }}>
-            complete · {totalTasks - totalDone} task{totalTasks - totalDone === 1 ? '' : 's'} remaining
-            {flowTotal > 0 ? ` · ${module.flowsDone} of ${flowTotal} flows done` : ''}
+            complete · {remaining} task{remaining === 1 ? '' : 's'} remaining
           </span>
         </div>
 
-        <div style={{ height: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(0,0,0,.07)', display: 'flex', marginBottom: 16 }}>
-          {disc.map(d => {
-            const seg = pct(module[d.doneKey], totalTasks)
-            return (
-              <div key={d.key} style={{ width: `${seg}%`, background: d.color, transition: 'width .7s cubic-bezier(.16,1,.3,1)' }} />
-            )
-          })}
+        <div style={{ height: 8, borderRadius: 999, overflow: 'hidden', background: 'rgba(0,0,0,.07)', marginBottom: 18 }}>
+          <div style={{ width: `${overall}%`, height: '100%', background: '#7C3AED', borderRadius: 999, transition: 'width .7s cubic-bezier(.16,1,.3,1)' }} />
         </div>
 
-        {/* Per-discipline cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${disc.length}, 1fr)`, gap: 8 }}>
-          {disc.map(d => {
-            const p = pct(module[d.doneKey], module[d.totalKey])
-            return (
-              <div key={d.key} style={{ background: d.bg, borderRadius: 8, padding: '9px 12px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: d.fg, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 4 }}>
-                  {d.label}
+        {/* Line-item task list — one row per refinement item with its status */}
+        {flows.length === 0 ? (
+          <div style={{ fontSize: 13, color: 'var(--muted)' }}>No refinement items yet.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {flows.map((f, i) => {
+              const r    = rollup(f)
+              const name = f.name.replace(/^F-\d+\s*/, '').trim() || f.name
+              return (
+                <div
+                  key={f.key}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, padding: '11px 2px',
+                    borderTop: i === 0 ? 'none' : '1px solid rgba(0,0,0,.06)',
+                  }}
+                >
+                  <span className="tkey">{f.code}</span>
+                  <span
+                    style={{ flex: 1, minWidth: 0, fontSize: 13.5, fontWeight: 500, color: '#1A1A2E', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    title={name}
+                  >
+                    {name}
+                  </span>
+                  <span className={`badge ${STATE_CLASS[r.state]}`}>{STATE_LABEL[r.state]}</span>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: d.fg, lineHeight: 1, letterSpacing: '-.04em', fontVariantNumeric: 'tabular-nums' }}>
-                  {p}%
-                </div>
-                <div style={{ fontSize: 12, color: d.fg, opacity: .75, marginTop: 3, fontWeight: 600 }}>
-                  {module[d.doneKey]}/{module[d.totalKey]}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

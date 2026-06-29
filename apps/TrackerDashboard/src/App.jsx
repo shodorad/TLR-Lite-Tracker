@@ -104,6 +104,11 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
   // instead of skewing Journey Health; the rest stay as the real user journeys.
   const refinements = data?.modules.find(isGlobalRefinements) ?? null
   const journeys = data?.modules.filter(m => !isGlobalRefinements(m)) ?? []
+  // The refinement epic's individual work items (flows), listed as line items in
+  // the Global Refinements widget instead of the per-discipline rollup cards.
+  const refinementFlows = refinements
+    ? (data?.flows.filter(f => f.module === refinements.name) ?? [])
+    : []
 
   return (
     <>
@@ -162,7 +167,7 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
             <ModuleHealthChart modules={journeys} />
 
             {/* Global Refinements — cross-cutting polish work, broken out on its own */}
-            <GlobalRefinements module={refinements} />
+            <GlobalRefinements module={refinements} flows={refinementFlows} />
 
             {/* Module accordions — full width, below chart (Global Refinements excluded) */}
             <StatusBriefingModules modules={journeys} />
