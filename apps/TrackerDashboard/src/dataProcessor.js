@@ -54,6 +54,14 @@ function isPortalSummary(summary) {
   return Object.values(SURFACES).some(s => matchesSurface(summary, s.prefix))
 }
 
+// "Global UI Refinements" is a cross-cutting polish epic, not a real user journey, so it's
+// surfaced in its own widget rather than mixed into Journey Health. Matched liberally
+// ("global … refinement") so Jira wording variants ("Global Refinements", "Global UI
+// Refinement", …) still route here.
+export function isGlobalRefinements(module) {
+  return /global\b.*\brefinement/i.test(module?.name ?? '')
+}
+
 export function pct(done, total) {
   return total === 0 ? 0 : Math.round((done / total) * 100)
 }
@@ -162,6 +170,9 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
   // population as the totals above so done + inProg + blocked + notStarted == total.
   let uxProg = 0, beProg = 0, intProg = 0, feProg = 0
   let uxBlocked = 0, beBlocked = 0, intBlocked = 0, feBlocked = 0
+  // Estimate coverage on OPEN work — drives the bridge meter. Counts every
+  // mobile-scoped not-done subtask and how many carry any effort estimate.
+  let estOpenTotal = 0, estOpenWithEst = 0
 
   // Per-discipline due-date status, tracked from each subtask's OWN duedate (not the
   // module epic's). Counts cover OPEN (not-done) subtasks only — a finished task is
@@ -204,6 +215,12 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
     // When rawFlows is present, flowModuleMap is the authoritative surface filter;
     // the fallback (no rawFlows) keeps every subtask via the component-tag path.
     if (rawFlows.length > 0 && !comp) continue
+
+    // Estimate coverage (open work only): a finished ticket needs no estimate.
+    if (!isDone) {
+      estOpenTotal++
+      if (iss.fields.timeoriginalestimate != null || iss.fields.timeestimate != null) estOpenWithEst++
+    }
 
     if (pk && !flowMap[pk]) {
       flowMap[pk] = {
@@ -313,7 +330,84 @@ export function processData(subtasks, rawFlows = [], doneWeek = [], opts = {}) {
   // empty (e.g. the component-tag code path).
   const totalFlows = Object.keys(flowModuleMap).length || Object.keys(flowMap).length
 
+  // ── Velocity & forecast (Path B, mobile-scoped) ───────────────────────────
+  // Weekly throughput from the trailing-window completions, a rolling average
+  // over the last ROLLING_WEEKS FULL weeks (the current partial week is excluded
+  // so a mid-week batch-close can't distort it), and a projected finish band
+  // from remaining open work ÷ velocity.
+  const doneTrailing = opts.doneTrailing ?? []
+  const isMobileDone = (s) => {
+    const pk = s.fields?.parent?.key ?? ''
+    if (phase2FlowKeys.has(pk)) return false
+    return rawFlows.length > 0 ? !!flowModuleMap[pk] : true
+  }
+  const mondayOf = (d) => {
+    const x = new Date(d); x.setHours(0, 0, 0, 0)
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7))
+    return x
+  }
+  const dateFmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  const weekCounts = new Map()   // monday-ms → completions
+  for (const s of doneTrailing) {
+    if (!isMobileDone(s)) continue
+    const when = s.fields?.statuscategorychangedate ?? s.fields?.resolutiondate
+    if (!when) continue
+    const k = mondayOf(when).getTime()
+    weekCounts.set(k, (weekCounts.get(k) ?? 0) + 1)
+  }
+
+  const curMon = mondayOf(now)
+  const DISPLAY_WEEKS = 6
+  const ROLLING_WEEKS = 4
+  const weeks = []
+  for (let i = DISPLAY_WEEKS - 1; i >= 0; i--) {
+    const m = new Date(curMon); m.setDate(m.getDate() - i * 7)
+    weeks.push({ label: dateFmt(m), count: weekCounts.get(m.getTime()) ?? 0, isCurrent: i === 0 })
+  }
+  const fullWeekCounts = []
+  for (let i = 1; i <= ROLLING_WEEKS; i++) {
+    const m = new Date(curMon); m.setDate(m.getDate() - i * 7)
+    fullWeekCounts.push(weekCounts.get(m.getTime()) ?? 0)
+  }
+  const velAvg = fullWeekCounts.reduce((a, b) => a + b, 0) / ROLLING_WEEKS
+  const velMin = Math.min(...fullWeekCounts)
+  const velMax = Math.max(...fullWeekCounts)
+
+  const openTotal = Math.max(0,
+    (uxTotal - uxDone) + (feTotal - feDone) + (beTotal - beDone) + (intTotal - intDone))
+  const addDays = (days) => {
+    const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + Math.round(days)); return d
+  }
+  let forecast
+  if (velAvg > 0 && openTotal > 0) {
+    const proj = addDays((openTotal / velAvg) * 7)
+    // Forecast band: ±25% around the rolling pace. Deliberately NOT the raw weekly
+    // min/max — a single reconciliation-gap week would otherwise throw the slow
+    // bound out by months. The true weekly spread still shows on the chart caption.
+    const low  = addDays((openTotal / (velAvg * 1.25)) * 7)   // ~25% faster → earliest
+    const high = addDays((openTotal / (velAvg * 0.75)) * 7)   // ~25% slower → latest
+    forecast = {
+      open: openTotal,
+      weeksToGo: openTotal / velAvg,
+      projDate: proj.toISOString(),
+      projLabel: dateFmt(proj),
+      rangeLabel: `${dateFmt(low)} – ${dateFmt(high)}`,
+    }
+  } else {
+    forecast = { open: openTotal, weeksToGo: null, projDate: null, projLabel: '—', rangeLabel: 'not enough recent throughput' }
+  }
+  const velocity = { weeks, avg: velAvg, min: velMin, max: velMax, rollingWeeks: ROLLING_WEEKS }
+  const estimate = {
+    openTotal: estOpenTotal,
+    openWithEst: estOpenWithEst,
+    coveragePct: estOpenTotal === 0 ? 0 : Math.round((estOpenWithEst / estOpenTotal) * 100),
+  }
+
   return {
+    velocity,
+    forecast,
+    estimate,
     stats: {
       uxDone, beDone, intDone, feDone,
       uxTotal, beTotal, intTotal, feTotal,

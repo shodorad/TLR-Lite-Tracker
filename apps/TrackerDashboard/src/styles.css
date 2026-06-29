@@ -329,6 +329,16 @@ tbody tr:hover td { background: rgba(0,0,0,.018); }
   gap: 20px;
 }
 
+/* Path B forecast — two-column throughput / remaining row, collapses on narrow screens */
+.forecast-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 818px) {
+  .forecast-cols { grid-template-columns: 1fr; }
+}
+
 /* Module Health keeps the 2-col layout for rings + chart side-by-side */
 .module-health-row {
   display: grid;

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { fetchDashboardData } from './api.js'
-import { processData, SURFACES } from './dataProcessor.js'
+import { processData, SURFACES, isGlobalRefinements } from './dataProcessor.js'
 import { autoDetectMode, getDateRange } from './utils/dateUtils.js'
 import Header from './components/Header.jsx'
 import DoneThisWeek from './components/DoneThisWeek.jsx'
@@ -8,9 +8,11 @@ import ModuleRollup from './components/ModuleRollup.jsx'
 import FlowDetail from './components/FlowDetail.jsx'
 import ModuleHealthChart from './components/ModuleHealthChart.jsx'
 import OverallProgress from './components/OverallProgress.jsx'
+import ForecastPanel from './components/ForecastPanel.jsx'
 import StatusBriefing, { StatusBriefingModules } from './components/StatusBriefing.jsx'
 import FeatureComparison from './components/FeatureComparison.jsx'
 import PortalsDashboard from './components/PortalsDashboard.jsx'
+import GlobalRefinements from './components/GlobalRefinements.jsx'
 
 export default function App() {
   const [data, setData] = useState(null)
@@ -55,7 +57,7 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
     setError(null)
     try {
       const raw = await fetchDashboardData(startDate)
-      const processed = processData(raw.subtasks, raw.rawFlows, raw.doneWeek)
+      const processed = processData(raw.subtasks, raw.rawFlows, raw.doneWeek, { doneTrailing: raw.doneTrailing })
       setRawSubtasks(raw.subtasks)
       setRawFlows(raw.rawFlows)
       setData(processed)
@@ -98,6 +100,11 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
     })
   }
 
+  // Pull "Global Refinements" out of the journey list so it gets its own widget
+  // instead of skewing Journey Health; the rest stay as the real user journeys.
+  const refinements = data?.modules.find(isGlobalRefinements) ?? null
+  const journeys = data?.modules.filter(m => !isGlobalRefinements(m)) ?? []
+
   return (
     <>
       <Header
@@ -135,6 +142,14 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
 
         {data && page === 'mobile' && (
           <div className="dashboard-single">
+            {/* Path B — count-based delivery forecast (live Jira, mobile surface) */}
+            <ForecastPanel
+              stats={data.stats}
+              velocity={data.velocity}
+              forecast={data.forecast}
+              estimate={data.estimate}
+            />
+
             {/* Hero row — 2 columns: stacked pair (overall + demo) · cadence */}
             <div className="hero-three">
               <div className="hero-stacked-pair">
@@ -143,11 +158,14 @@ const [doneThisWeekCollapsed, setDoneThisWeekCollapsed] = useState(
               <StatusBriefing stats={data.stats} />
             </div> {/* end .hero-three */}
 
-            {/* Journey Health chart — full width, below summary */}
-            <ModuleHealthChart modules={data.modules} />
+            {/* Journey Health chart — full width, below summary (Global Refinements excluded) */}
+            <ModuleHealthChart modules={journeys} />
 
-            {/* Module accordions — full width, below chart */}
-            <StatusBriefingModules modules={data.modules} />
+            {/* Global Refinements — cross-cutting polish work, broken out on its own */}
+            <GlobalRefinements module={refinements} />
+
+            {/* Module accordions — full width, below chart (Global Refinements excluded) */}
+            <StatusBriefingModules modules={journeys} />
 
             {/* Flow Detail Breakdown — collapsed by default */}
             <div className="card flow-breakdown-card">

@@ -44,7 +44,15 @@ function formatJiraDate(date) {
 const SUBTASK_FIELDS = [
   'summary', 'status', 'components', 'parent',
   'assignee', 'statuscategorychangedate', 'resolutiondate', 'duedate',
+  // Effort fields — drive the estimate-coverage bridge meter. Currently null
+  // across TLN (nobody estimates), so coverage reads 0%; it climbs automatically
+  // if/when the team starts populating either field. No code change needed then.
+  'timeoriginalestimate', 'timeestimate',
 ]
+
+// How far back the velocity chart looks. Eight weeks gives ~6 full trailing
+// weeks for the rolling average plus the current (partial) week for display.
+const VELOCITY_WINDOW_DAYS = 56
 
 // Flow-level (parent) issues — fetched for their due dates.
 // `issuetype` lets us tell Epics (the modules) from Tasks (the flows).
@@ -55,7 +63,7 @@ export async function fetchDashboardData(startDate) {
     ? ` AND status changed TO "Done" AFTER "${formatJiraDate(startDate)}"`
     : ' AND status changed TO "Done" AFTER -7d'
 
-  const [subtasks, doneWeek, rawFlows] = await Promise.all([
+  const [subtasks, doneWeek, rawFlows, doneTrailing] = await Promise.all([
     jiraPost('project = TLN AND issuetype = Subtask ORDER BY key ASC', SUBTASK_FIELDS),
     jiraPost(
       'project = TLN AND issuetype = Subtask AND status = "Done"' +
@@ -64,6 +72,15 @@ export async function fetchDashboardData(startDate) {
       SUBTASK_FIELDS,
     ),
     jiraPost('project = TLN AND issuetype != Subtask ORDER BY key ASC', FLOW_FIELDS),
+    // Fixed trailing window (independent of the date-mode selector) — the velocity
+    // chart always reflects the last VELOCITY_WINDOW_DAYS regardless of the "Done
+    // this week" range the user is viewing.
+    jiraPost(
+      'project = TLN AND issuetype = Subtask AND status = "Done"' +
+        ` AND status changed TO "Done" AFTER -${VELOCITY_WINDOW_DAYS}d` +
+        ' ORDER BY statuscategorychangedate DESC',
+      SUBTASK_FIELDS,
+    ),
   ])
-  return { subtasks, doneWeek, rawFlows }
+  return { subtasks, doneWeek, rawFlows, doneTrailing }
 }
