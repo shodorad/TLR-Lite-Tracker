@@ -81,7 +81,7 @@ export default function ForecastPanel({ stats, velocity, forecast, estimate }) {
               likely window&nbsp; <strong style={{ color: '#333', fontWeight: 700 }}>{forecast.rangeLabel}</strong>
             </div>
             <div style={{ fontSize: 11, color: 'var(--quiet)', marginTop: 8 }}>
-              derived from live Jira throughput — not a verbal estimate
+              derived from live Jira throughput
             </div>
           </div>
           <div style={{ display: 'flex', gap: 24 }}>
